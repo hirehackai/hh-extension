@@ -9,7 +9,6 @@ class PopupInterface {
     this.userProfile = null;
     this.settings = null;
     this.stats = null;
-
     this.init();
   }
 
@@ -963,6 +962,25 @@ class PopupInterface {
 }
 
 // Initialize popup when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
+let popupInitialized = false;
+
+function initializePopup() {
+  console.log('Initializing popup...');
+
+  if (popupInitialized) {
+    console.log('Popup already initialized, skipping...');
+    return;
+  }
+
+  popupInitialized = true;
   new PopupInterface();
-});
+}
+
+// Check if DOM is already loaded
+if (document.readyState === 'loading') {
+  // DOM is still loading, wait for DOMContentLoaded
+  document.addEventListener('DOMContentLoaded', initializePopup, { once: true });
+} else {
+  // DOM is already loaded
+  initializePopup();
+}
