@@ -1,4 +1,5 @@
 // Options page - Full configuration interface
+import _ from 'lodash';
 import { StorageManager } from './utils/storage.js';
 import { MessageHandler, ValidationHelper, Logger } from './utils/helpers.js';
 import { MESSAGE_TYPES } from './utils/constants.js';
@@ -34,11 +35,15 @@ class OptionsPage {
         MessageHandler.sendMessage(MESSAGE_TYPES.GET_APPLICATION_HISTORY)
       ]);
 
-      this.userProfile = profileResponse.data;
-      this.settings = settingsResponse.data;
-      this.applicationHistory = historyResponse.data || [];
+      this.userProfile = profileResponse?.data || this.getDefaultProfile();
+      this.settings = settingsResponse?.data || this.getDefaultSettings();
+      this.applicationHistory = historyResponse?.data || [];
     } catch (error) {
       Logger.error('Failed to load options data', error);
+      // Set defaults on error
+      this.userProfile = this.getDefaultProfile();
+      this.settings = this.getDefaultSettings();
+      this.applicationHistory = [];
     }
   }
 
@@ -1445,6 +1450,67 @@ class OptionsPage {
     setTimeout(() => {
       notification.remove();
     }, 3000);
+  }
+
+  getDefaultProfile() {
+    return {
+      personal: {
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        location: ''
+      },
+      professional: {
+        currentTitle: '',
+        experience: 0,
+        summary: '',
+        skills: []
+      },
+      preferences: {
+        salary: { min: 0, max: 200000 },
+        locations: [],
+        includeKeywords: [],
+        excludeKeywords: [],
+        jobTypes: [],
+        companies: {
+          whitelist: [],
+          blacklist: []
+        }
+      }
+    };
+  }
+
+  getDefaultSettings() {
+    return {
+      rateLimit: {
+        dailyLimit: 30,
+        hourlyLimit: 10,
+        delayBetween: 60
+      },
+      application: {
+        skipCoverLetter: false,
+        skipQuestions: false,
+        autoAnswerBasic: true,
+        randomizeTiming: false
+      },
+      smartFiltering: {
+        checkSalary: false,
+        checkLocation: false,
+        checkExperience: false
+      },
+      preferences: {
+        salary: { min: 0, max: 200000 },
+        locations: [],
+        includeKeywords: [],
+        excludeKeywords: [],
+        jobTypes: [],
+        companies: {
+          whitelist: [],
+          blacklist: []
+        }
+      }
+    };
   }
 }
 

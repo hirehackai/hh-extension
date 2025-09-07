@@ -1,4 +1,5 @@
 // Popup interface
+import _ from 'lodash';
 import { StorageManager } from './utils/storage.js';
 import { MessageHandler, ValidationHelper, Logger } from './utils/helpers.js';
 import { MESSAGE_TYPES } from './utils/constants.js';
@@ -34,11 +35,15 @@ class PopupInterface {
         MessageHandler.sendMessage(MESSAGE_TYPES.GET_STATS)
       ]);
 
-      this.userProfile = profileResponse.data;
-      this.settings = settingsResponse.data;
-      this.stats = statsResponse.data;
+      this.userProfile = profileResponse?.data || this.getDefaultProfile();
+      this.settings = settingsResponse?.data || this.getDefaultSettings();
+      this.stats = statsResponse?.data || this.getDefaultStats();
     } catch (error) {
       Logger.error('Failed to load popup data', error);
+      // Set defaults in case of error
+      this.userProfile = this.getDefaultProfile();
+      this.settings = this.getDefaultSettings();
+      this.stats = this.getDefaultStats();
     }
   }
 
@@ -603,46 +608,47 @@ class PopupInterface {
 
   populateData() {
     if (this.userProfile) {
-      // Populate profile form
-      const profile = this.userProfile;
-      document.getElementById('first-name').value = profile.personal.firstName || '';
-      document.getElementById('last-name').value = profile.personal.lastName || '';
-      document.getElementById('email').value = profile.personal.email || '';
-      document.getElementById('phone').value = profile.personal.phone || '';
-      document.getElementById('location').value = profile.personal.location || '';
-      document.getElementById('current-title').value = profile.professional.currentTitle || '';
-      document.getElementById('experience').value = profile.professional.experience || 0;
-      document.getElementById('skills').value = profile.professional.skills.join(', ') || '';
+      // Populate profile form using lodash get for safe property access
+      document.getElementById('first-name').value = _.get(this.userProfile, 'personal.firstName', '');
+      document.getElementById('last-name').value = _.get(this.userProfile, 'personal.lastName', '');
+      document.getElementById('email').value = _.get(this.userProfile, 'personal.email', '');
+      document.getElementById('phone').value = _.get(this.userProfile, 'personal.phone', '');
+      document.getElementById('location').value = _.get(this.userProfile, 'personal.location', '');
+      document.getElementById('current-title').value = _.get(this.userProfile, 'professional.currentTitle', '');
+      document.getElementById('experience').value = _.get(this.userProfile, 'professional.experience', 0);
+      document.getElementById('skills').value = _.get(this.userProfile, 'professional.skills', []).join(', ');
     }
 
     if (this.settings) {
-      // Populate settings form
-      document.getElementById('daily-limit').value = this.settings.rateLimit.dailyLimit;
-      document.getElementById('hourly-limit').value = this.settings.rateLimit.hourlyLimit;
-      document.getElementById('skip-cover-letter').checked = this.settings.application.skipCoverLetter;
-      document.getElementById('skip-questions').checked = this.settings.application.skipQuestions;
-      document.getElementById('auto-answer-basic').checked = this.settings.application.autoAnswerBasic;
-      document.getElementById('min-salary').value = this.settings.preferences.salary.min;
-      document.getElementById('max-salary').value = this.settings.preferences.salary.max;
-      document.getElementById('exclude-keywords').value = this.settings.preferences.excludeKeywords.join(', ');
+      // Populate settings form using lodash get for safe property access
+      document.getElementById('daily-limit').value = _.get(this.settings, 'rateLimit.dailyLimit', 30);
+      document.getElementById('hourly-limit').value = _.get(this.settings, 'rateLimit.hourlyLimit', 10);
+      document.getElementById('skip-cover-letter').checked = _.get(this.settings, 'application.skipCoverLetter', false);
+      document.getElementById('skip-questions').checked = _.get(this.settings, 'application.skipQuestions', false);
+      document.getElementById('auto-answer-basic').checked = _.get(this.settings, 'application.autoAnswerBasic', true);
+      document.getElementById('min-salary').value = _.get(this.settings, 'preferences.salary.min', 0);
+      document.getElementById('max-salary').value = _.get(this.settings, 'preferences.salary.max', 200000);
+      document.getElementById('exclude-keywords').value = _.get(this.settings, 'preferences.excludeKeywords', []).join(', ');
     }
   }
 
   async updateStats() {
     if (!this.stats) return;
 
-    document.getElementById('total-applications').textContent = this.stats.totalApplications;
-    document.getElementById('applications-today').textContent = this.stats.applicationsToday || 0;
-    document.getElementById('streak-days').textContent = this.stats.streakDays;
+    document.getElementById('total-applications').textContent = _.get(this.stats, 'totalApplications', 0);
+    document.getElementById('applications-today').textContent = _.get(this.stats, 'applicationsToday', 0);
+    document.getElementById('streak-days').textContent = _.get(this.stats, 'streakDays', 0);
     
-    const successRate = this.stats.totalApplications > 0 
-      ? Math.round((this.stats.successfulApplications / this.stats.totalApplications) * 100)
+    const totalApplications = _.get(this.stats, 'totalApplications', 0);
+    const successfulApplications = _.get(this.stats, 'successfulApplications', 0);
+    const successRate = totalApplications > 0 
+      ? Math.round((successfulApplications / totalApplications) * 100)
       : 0;
     document.getElementById('success-rate').textContent = `${successRate}%`;
 
     // Update progress bar
-    const dailyLimit = this.settings?.rateLimit?.dailyLimit || 30;
-    const applicationsToday = this.stats.applicationsToday || 0;
+    const dailyLimit = _.get(this.settings, 'rateLimit.dailyLimit', 30);
+    const applicationsToday = _.get(this.stats, 'applicationsToday', 0);
     const progress = Math.min((applicationsToday / dailyLimit) * 100, 100);
     
     document.getElementById('daily-progress').style.width = `${progress}%`;
@@ -705,7 +711,7 @@ class PopupInterface {
           location: document.getElementById('location').value
         },
         professional: {
-          ...this.userProfile.professional,
+          ..._.get(this.userProfile, 'professional', {}),
           currentTitle: document.getElementById('current-title').value,
           experience: parseInt(document.getElementById('experience').value) || 0,
           skills: document.getElementById('skills').value.split(',').map(s => s.trim()).filter(Boolean)
@@ -736,16 +742,18 @@ class PopupInterface {
       const settings = {
         ...this.settings,
         rateLimit: {
+          ..._.get(this.settings, 'rateLimit', {}),
           dailyLimit: parseInt(document.getElementById('daily-limit').value),
           hourlyLimit: parseInt(document.getElementById('hourly-limit').value)
         },
         application: {
+          ..._.get(this.settings, 'application', {}),
           skipCoverLetter: document.getElementById('skip-cover-letter').checked,
           skipQuestions: document.getElementById('skip-questions').checked,
           autoAnswerBasic: document.getElementById('auto-answer-basic').checked
         },
         preferences: {
-          ...this.settings.preferences,
+          ..._.get(this.settings, 'preferences', {}),
           salary: {
             min: parseInt(document.getElementById('min-salary').value) || 0,
             max: parseInt(document.getElementById('max-salary').value) || 200000
@@ -812,6 +820,79 @@ class PopupInterface {
       Logger.error('Import data failed', error);
       alert('Failed to import data. Please check the file format.');
     }
+  }
+
+  getDefaultProfile() {
+    return {
+      personal: {
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        location: ''
+      },
+      professional: {
+        currentTitle: '',
+        experience: 0,
+        summary: '',
+        skills: []
+      },
+      preferences: {
+        salary: { min: 0, max: 200000 },
+        locations: [],
+        includeKeywords: [],
+        excludeKeywords: [],
+        jobTypes: [],
+        companies: {
+          whitelist: [],
+          blacklist: []
+        }
+      }
+    };
+  }
+
+  getDefaultSettings() {
+    return {
+      rateLimit: {
+        dailyLimit: 30,
+        hourlyLimit: 10,
+        delayBetween: 60
+      },
+      application: {
+        skipCoverLetter: false,
+        skipQuestions: false,
+        autoAnswerBasic: true,
+        randomizeTiming: false
+      },
+      smartFiltering: {
+        checkSalary: false,
+        checkLocation: false,
+        checkExperience: false
+      },
+      preferences: {
+        salary: { min: 0, max: 200000 },
+        locations: [],
+        includeKeywords: [],
+        excludeKeywords: [],
+        jobTypes: [],
+        companies: {
+          whitelist: [],
+          blacklist: []
+        }
+      }
+    };
+  }
+
+  getDefaultStats() {
+    return {
+      totalApplications: 0,
+      applicationsToday: 0,
+      successfulApplications: 0,
+      failedApplications: 0,
+      streakDays: 0,
+      lastApplicationDate: null,
+      recentApplications: []
+    };
   }
 }
 
