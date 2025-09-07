@@ -1,5 +1,12 @@
 // Content script for LinkedIn automation
-import { DOMHelper, LinkedInHelper, URLHelper, MessageHandler, RateLimiter, Logger } from './utils/helpers.js';
+import {
+  DOMHelper,
+  LinkedInHelper,
+  URLHelper,
+  MessageHandler,
+  RateLimiter,
+  Logger
+} from './utils/helpers.js';
 import { MESSAGE_TYPES, APPLICATION_STATUS, LINKEDIN_SELECTORS } from './utils/constants.js';
 
 class LinkedInAutomation {
@@ -87,7 +94,7 @@ class LinkedInAutomation {
     ui.id = 'hirehack-automation-ui';
     ui.innerHTML = `
       <div class="hh-header">
-        <img src="${chrome.runtime.getURL('icons/icon16.png')}" alt="HireHack">
+        <img src="${chrome.runtime.getURL('icons/icon.png')}" alt="HireHack">
         <span>HireHack</span>
         <button class="hh-close" data-action="close">×</button>
       </div>
@@ -295,7 +302,9 @@ class LinkedInAutomation {
     const header = this.ui.querySelector('.hh-header');
 
     header.addEventListener('mousedown', e => {
-      if (e.target.closest('.hh-close')) { return; }
+      if (e.target.closest('.hh-close')) {
+        return;
+      }
 
       isDragging = true;
       startX = e.clientX;
@@ -311,7 +320,9 @@ class LinkedInAutomation {
     });
 
     const handleMouseMove = e => {
-      if (!isDragging) { return; }
+      if (!isDragging) {
+        return;
+      }
 
       const deltaX = e.clientX - startX;
       const deltaY = e.clientY - startY;
@@ -362,7 +373,6 @@ class LinkedInAutomation {
 
       // Start the automation process
       this.processCurrentPage();
-
     } catch (error) {
       Logger.error('Start auto apply error', error);
       this.updateStatus('error', 'Failed to start');
@@ -392,7 +402,9 @@ class LinkedInAutomation {
   }
 
   async processCurrentPage() {
-    if (!this.isActive || this.isPaused) { return; }
+    if (!this.isActive || this.isPaused) {
+      return;
+    }
 
     try {
       // Check if this is a job detail page
@@ -438,7 +450,6 @@ class LinkedInAutomation {
 
       // Apply to the job
       await this.applyToJob(jobData);
-
     } catch (error) {
       Logger.error('Process page error', error);
       await this.handleApplicationError(error);
@@ -462,7 +473,6 @@ class LinkedInAutomation {
 
       // Handle application flow
       await this.handleApplicationFlow(jobData);
-
     } catch (error) {
       Logger.error('Apply to job error', error);
       await this.handleApplicationError(error, jobData);
@@ -472,7 +482,9 @@ class LinkedInAutomation {
   async handleApplicationFlow(jobData) {
     try {
       // Look for submit button or next button
-      const submitButton = DOMHelper.getVisibleElement('[data-easy-apply-next-btn], [aria-label*="Submit"], [data-easy-apply-submit-btn]');
+      const submitButton = DOMHelper.getVisibleElement(
+        '[data-easy-apply-next-btn], [aria-label*="Submit"], [data-easy-apply-submit-btn]'
+      );
 
       if (submitButton) {
         DOMHelper.simulateClick(submitButton);
@@ -489,7 +501,6 @@ class LinkedInAutomation {
       } else {
         throw new Error('Submit button not found');
       }
-
     } catch (error) {
       throw new Error(`Application flow error: ${error.message}`);
     }
@@ -529,7 +540,9 @@ class LinkedInAutomation {
     this.updateSessionStats();
 
     // Close application modal
-    const closeButton = DOMHelper.getVisibleElement('[data-easy-apply-close-btn], [aria-label*="Dismiss"]');
+    const closeButton = DOMHelper.getVisibleElement(
+      '[data-easy-apply-close-btn], [aria-label*="Dismiss"]'
+    );
     if (closeButton) {
       DOMHelper.simulateClick(closeButton);
     }
@@ -550,7 +563,9 @@ class LinkedInAutomation {
     }
 
     // Close any open modals
-    const closeButton = DOMHelper.getVisibleElement('[data-easy-apply-close-btn], [aria-label*="Dismiss"]');
+    const closeButton = DOMHelper.getVisibleElement(
+      '[data-easy-apply-close-btn], [aria-label*="Dismiss"]'
+    );
     if (closeButton) {
       DOMHelper.simulateClick(closeButton);
     }
@@ -562,7 +577,9 @@ class LinkedInAutomation {
   async navigateToNextJob() {
     // Simple navigation - in a real implementation, you'd want more sophisticated job discovery
     try {
-      const nextJobLink = document.querySelector('.jobs-search-results__list-item:not(.jobs-search-results__list-item--viewed) a');
+      const nextJobLink = document.querySelector(
+        '.jobs-search-results__list-item:not(.jobs-search-results__list-item--viewed) a'
+      );
       if (nextJobLink) {
         DOMHelper.simulateClick(nextJobLink);
         await DOMHelper.wait(3000);
@@ -657,6 +674,6 @@ if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => {
     new LinkedInAutomation();
   });
-} else {
+} else if (document.readyState === 'complete' || document.readyState === 'interactive') {
   new LinkedInAutomation();
 }
