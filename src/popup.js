@@ -976,11 +976,8 @@ function initializePopup() {
   new PopupInterface();
 }
 
-// Check if DOM is already loaded
-if (document.readyState === 'loading') {
-  // DOM is still loading, wait for DOMContentLoaded
-  document.addEventListener('DOMContentLoaded', initializePopup, { once: true });
-} else {
-  // DOM is already loaded
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+  // DOM is already ready
   initializePopup();
+  // document.addEventListener('DOMContentLoaded', initializePopup, { once: true });
 }
