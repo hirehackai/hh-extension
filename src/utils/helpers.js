@@ -1,5 +1,5 @@
 // Helper utility functions
-import { MESSAGE_TYPES, APPLICATION_STATUS, LINKEDIN_SELECTORS } from './constants.js';
+import { LINKEDIN_SELECTORS } from './constants.js';
 
 export class DOMHelper {
   static wait(ms) {
@@ -15,10 +15,10 @@ export class DOMHelper {
       }
 
       const observer = new MutationObserver(() => {
-        const element = document.querySelector(selector);
-        if (element) {
+        const newElement = document.querySelector(selector);
+        if (newElement) {
           observer.disconnect();
-          resolve(element);
+          resolve(newElement);
         }
       });
 
@@ -38,8 +38,9 @@ export class DOMHelper {
     const elements = document.querySelectorAll(selector);
     return Array.from(elements).find(el => {
       const rect = el.getBoundingClientRect();
-      return rect.width > 0 && rect.height > 0 && 
-             window.getComputedStyle(el).visibility !== 'hidden';
+      return (
+        rect.width > 0 && rect.height > 0 && window.getComputedStyle(el).visibility !== 'hidden'
+      );
     });
   }
 
@@ -68,7 +69,7 @@ export class DOMHelper {
 
   static simulateKeyPress(element, key) {
     const event = new KeyboardEvent('keydown', {
-      key: key,
+      key,
       bubbles: true,
       cancelable: true
     });
@@ -82,8 +83,10 @@ export class LinkedInHelper {
       const jobTitle = document.querySelector(LINKEDIN_SELECTORS.JOB_TITLE)?.textContent?.trim();
       const company = document.querySelector(LINKEDIN_SELECTORS.COMPANY_NAME)?.textContent?.trim();
       const location = document.querySelector(LINKEDIN_SELECTORS.JOB_LOCATION)?.textContent?.trim();
-      const description = document.querySelector(LINKEDIN_SELECTORS.JOB_DESCRIPTION)?.textContent?.trim();
-      
+      const description = document
+        .querySelector(LINKEDIN_SELECTORS.JOB_DESCRIPTION)
+        ?.textContent?.trim();
+
       return {
         title: jobTitle || 'Unknown Title',
         company: company || 'Unknown Company',
@@ -114,20 +117,22 @@ export class LinkedInHelper {
 
   static extractApplicationQuestions() {
     const questions = [];
-    const questionElements = document.querySelectorAll('[data-test-form-builder-radio-button-form-component]');
-    
+    const questionElements = document.querySelectorAll(
+      '[data-test-form-builder-radio-button-form-component]'
+    );
+
     questionElements.forEach(element => {
       const questionText = element.querySelector('legend')?.textContent?.trim();
       const options = Array.from(element.querySelectorAll('input[type="radio"]')).map(input => ({
         value: input.value,
         label: input.parentElement?.textContent?.trim()
       }));
-      
+
       if (questionText && options.length > 0) {
         questions.push({
           question: questionText,
           type: 'radio',
-          options: options
+          options
         });
       }
     });
@@ -150,7 +155,8 @@ export class LinkedInHelper {
 }
 
 export class RateLimiter {
-  constructor(maxActions = 30, timeWindow = 3600000) { // 30 actions per hour
+  constructor(maxActions = 30, timeWindow = 3600000) {
+    // 30 actions per hour
     this.maxActions = maxActions;
     this.timeWindow = timeWindow;
     this.actions = [];
@@ -167,8 +173,8 @@ export class RateLimiter {
   }
 
   getTimeUntilNextAction() {
-    if (this.actions.length < this.maxActions) return 0;
-    
+    if (this.actions.length < this.maxActions) { return 0; }
+
     const oldestAction = Math.min(...this.actions);
     const timeUntilExpiry = this.timeWindow - (Date.now() - oldestAction);
     return Math.max(0, timeUntilExpiry);
@@ -199,13 +205,13 @@ export class MessageHandler {
 
 export class URLHelper {
   static isLinkedInJobsPage() {
-    return window.location.hostname === 'www.linkedin.com' && 
-           window.location.pathname.includes('/jobs/');
+    return (
+      window.location.hostname === 'www.linkedin.com' && window.location.pathname.includes('/jobs/')
+    );
   }
 
   static isLinkedInJobDetailPage() {
-    return this.isLinkedInJobsPage() && 
-           window.location.pathname.includes('/view/');
+    return this.isLinkedInJobsPage() && window.location.pathname.includes('/view/');
   }
 
   static getJobIdFromURL() {
@@ -225,29 +231,29 @@ export class ValidationHelper {
   }
 
   static isValidPhone(phone) {
-    const phoneRegex = /^\+?[\d\s\-\(\)]{10,}$/;
+    const phoneRegex = /^\+?[\d\s\-()]{10,}$/;
     return phoneRegex.test(phone);
   }
 
   static validateUserProfile(profile) {
     const errors = [];
-    
+
     if (!profile.personal.firstName?.trim()) {
       errors.push('First name is required');
     }
-    
+
     if (!profile.personal.lastName?.trim()) {
       errors.push('Last name is required');
     }
-    
+
     if (!profile.personal.email || !this.isValidEmail(profile.personal.email)) {
       errors.push('Valid email is required');
     }
-    
+
     if (profile.personal.phone && !this.isValidPhone(profile.personal.phone)) {
       errors.push('Valid phone number format required');
     }
-    
+
     return errors;
   }
 }

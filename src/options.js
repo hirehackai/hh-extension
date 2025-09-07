@@ -1,6 +1,5 @@
 // Options page - Full configuration interface
 import _ from 'lodash';
-import { StorageManager } from './utils/storage.js';
 import { MessageHandler, ValidationHelper, Logger } from './utils/helpers.js';
 import { MESSAGE_TYPES } from './utils/constants.js';
 
@@ -10,7 +9,7 @@ class OptionsPage {
     this.settings = null;
     this.applicationHistory = [];
     this.currentPage = 'profile';
-    
+
     this.init();
   }
 
@@ -20,7 +19,7 @@ class OptionsPage {
       this.renderInterface();
       this.setupEventListeners();
       this.populateData();
-      
+
       Logger.info('Options page initialized');
     } catch (error) {
       Logger.error('Options page initialization failed', error);
@@ -1079,7 +1078,7 @@ class OptionsPage {
   setupEventListeners() {
     // Navigation
     document.querySelectorAll('.nav-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
+      btn.addEventListener('click', e => {
         this.switchPage(e.target.dataset.page);
       });
     });
@@ -1106,7 +1105,7 @@ class OptionsPage {
       document.getElementById('import-file').click();
     });
 
-    document.getElementById('import-file')?.addEventListener('change', (e) => {
+    document.getElementById('import-file')?.addEventListener('change', e => {
       this.importData(e.target.files[0]);
     });
 
@@ -1155,7 +1154,7 @@ class OptionsPage {
 
   populateProfileForm() {
     const profile = this.userProfile;
-    
+
     document.getElementById('first-name').value = profile.personal.firstName || '';
     document.getElementById('last-name').value = profile.personal.lastName || '';
     document.getElementById('email').value = profile.personal.email || '';
@@ -1168,21 +1167,28 @@ class OptionsPage {
   }
 
   populateSettingsForm() {
-    const settings = this.settings;
-    
+    const { settings } = this;
+
     // Preferences
     document.getElementById('min-salary').value = settings.preferences.salary.min || 0;
     document.getElementById('max-salary').value = settings.preferences.salary.max || 200000;
-    document.getElementById('preferred-locations').value = settings.preferences.locations.join('\n');
-    document.getElementById('include-keywords').value = settings.preferences.includeKeywords.join(', ');
-    document.getElementById('exclude-keywords').value = settings.preferences.excludeKeywords.join(', ');
-    document.getElementById('preferred-companies').value = settings.preferences.companies.whitelist.join(', ');
-    document.getElementById('blocked-companies').value = settings.preferences.companies.blacklist.join(', ');
-    
+    document.getElementById('preferred-locations').value =
+      settings.preferences.locations.join('\n');
+    document.getElementById('include-keywords').value =
+      settings.preferences.includeKeywords.join(', ');
+    document.getElementById('exclude-keywords').value =
+      settings.preferences.excludeKeywords.join(', ');
+    document.getElementById('preferred-companies').value =
+      settings.preferences.companies.whitelist.join(', ');
+    document.getElementById('blocked-companies').value =
+      settings.preferences.companies.blacklist.join(', ');
+
     // Job types
     settings.preferences.jobTypes.forEach(type => {
       const checkbox = document.querySelector(`input[name="job-types"][value="${type}"]`);
-      if (checkbox) checkbox.checked = true;
+      if (checkbox) {
+        checkbox.checked = true;
+      }
     });
 
     // Automation settings
@@ -1192,16 +1198,21 @@ class OptionsPage {
     document.getElementById('skip-cover-letter').checked = settings.application.skipCoverLetter;
     document.getElementById('skip-complex-questions').checked = settings.application.skipQuestions;
     document.getElementById('auto-answer-basic').checked = settings.application.autoAnswerBasic;
-    document.getElementById('randomize-timing').checked = settings.application.randomizeTiming || false;
-    document.getElementById('check-salary-match').checked = settings.smartFiltering?.checkSalary || false;
-    document.getElementById('check-location-match').checked = settings.smartFiltering?.checkLocation || false;
-    document.getElementById('check-experience-match').checked = settings.smartFiltering?.checkExperience || false;
+    document.getElementById('randomize-timing').checked =
+      settings.application.randomizeTiming || false;
+    document.getElementById('check-salary-match').checked =
+      settings.smartFiltering?.checkSalary || false;
+    document.getElementById('check-location-match').checked =
+      settings.smartFiltering?.checkLocation || false;
+    document.getElementById('check-experience-match').checked =
+      settings.smartFiltering?.checkExperience || false;
   }
 
   async saveProfile() {
     try {
-      const selectedJobTypes = Array.from(document.querySelectorAll('input[name="job-types"]:checked'))
-        .map(cb => cb.value);
+      const selectedJobTypes = Array.from(
+        document.querySelectorAll('input[name="job-types"]:checked')
+      ).map(cb => cb.value);
 
       const profile = {
         ...this.userProfile,
@@ -1215,9 +1226,13 @@ class OptionsPage {
         professional: {
           ...this.userProfile.professional,
           currentTitle: document.getElementById('current-title').value,
-          experience: parseInt(document.getElementById('experience').value) || 0,
+          experience: parseInt(document.getElementById('experience').value, 10) || 0,
           summary: document.getElementById('summary').value,
-          skills: document.getElementById('skills').value.split(',').map(s => s.trim()).filter(Boolean)
+          skills: document
+            .getElementById('skills')
+            .value.split(',')
+            .map(s => s.trim())
+            .filter(Boolean)
         },
         preferences: {
           ...this.userProfile.preferences,
@@ -1227,7 +1242,7 @@ class OptionsPage {
 
       const errors = ValidationHelper.validateUserProfile(profile);
       if (errors.length > 0) {
-        alert('Please fix the following errors:\n' + errors.join('\n'));
+        alert(`Please fix the following errors:\n${errors.join('\n')}`);
         return;
       }
 
@@ -1248,20 +1263,35 @@ class OptionsPage {
     try {
       const preferences = {
         salary: {
-          min: parseInt(document.getElementById('min-salary').value) || 0,
-          max: parseInt(document.getElementById('max-salary').value) || 200000
+          min: parseInt(document.getElementById('min-salary').value, 10) || 0,
+          max: parseInt(document.getElementById('max-salary').value, 10) || 200000
         },
-        locations: document.getElementById('preferred-locations').value
-          .split('\n').map(l => l.trim()).filter(Boolean),
-        includeKeywords: document.getElementById('include-keywords').value
-          .split(',').map(k => k.trim()).filter(Boolean),
-        excludeKeywords: document.getElementById('exclude-keywords').value
-          .split(',').map(k => k.trim()).filter(Boolean),
+        locations: document
+          .getElementById('preferred-locations')
+          .value.split('\n')
+          .map(l => l.trim())
+          .filter(Boolean),
+        includeKeywords: document
+          .getElementById('include-keywords')
+          .value.split(',')
+          .map(k => k.trim())
+          .filter(Boolean),
+        excludeKeywords: document
+          .getElementById('exclude-keywords')
+          .value.split(',')
+          .map(k => k.trim())
+          .filter(Boolean),
         companies: {
-          whitelist: document.getElementById('preferred-companies').value
-            .split(',').map(c => c.trim()).filter(Boolean),
-          blacklist: document.getElementById('blocked-companies').value
-            .split(',').map(c => c.trim()).filter(Boolean)
+          whitelist: document
+            .getElementById('preferred-companies')
+            .value.split(',')
+            .map(c => c.trim())
+            .filter(Boolean),
+          blacklist: document
+            .getElementById('blocked-companies')
+            .value.split(',')
+            .map(c => c.trim())
+            .filter(Boolean)
         }
       };
 
@@ -1270,7 +1300,10 @@ class OptionsPage {
         preferences: { ...this.userProfile.preferences, ...preferences }
       };
 
-      const response = await MessageHandler.sendMessage(MESSAGE_TYPES.SAVE_USER_PROFILE, updatedProfile);
+      const response = await MessageHandler.sendMessage(
+        MESSAGE_TYPES.SAVE_USER_PROFILE,
+        updatedProfile
+      );
       if (response.success) {
         this.userProfile = updatedProfile;
         this.showNotification('Preferences saved successfully!', 'success');
@@ -1288,9 +1321,9 @@ class OptionsPage {
       const settings = {
         ...this.settings,
         rateLimit: {
-          dailyLimit: parseInt(document.getElementById('daily-limit').value),
-          hourlyLimit: parseInt(document.getElementById('hourly-limit').value),
-          delayBetween: parseInt(document.getElementById('delay-between').value)
+          dailyLimit: parseInt(document.getElementById('daily-limit').value, 10),
+          hourlyLimit: parseInt(document.getElementById('hourly-limit').value, 10),
+          delayBetween: parseInt(document.getElementById('delay-between').value, 10)
         },
         application: {
           skipCoverLetter: document.getElementById('skip-cover-letter').checked,
@@ -1333,13 +1366,15 @@ class OptionsPage {
 
   renderHistoryTable() {
     const tbody = document.getElementById('history-table-body');
-    
+
     if (this.applicationHistory.length === 0) {
       tbody.innerHTML = '<tr class="empty-row"><td colspan="6">No applications found</td></tr>';
       return;
     }
 
-    tbody.innerHTML = this.applicationHistory.map(app => `
+    tbody.innerHTML = this.applicationHistory
+      .map(
+        app => `
       <tr>
         <td>${new Date(app.appliedAt).toLocaleDateString()}</td>
         <td>${app.jobData.title}</td>
@@ -1356,14 +1391,16 @@ class OptionsPage {
           </button>
         </td>
       </tr>
-    `).join('');
+    `
+      )
+      .join('');
   }
 
   updateHistoryStats() {
     const total = this.applicationHistory.length;
     const successful = this.applicationHistory.filter(app => app.status === 'success').length;
     const successRate = total > 0 ? Math.round((successful / total) * 100) : 0;
-    
+
     const thisWeek = this.applicationHistory.filter(app => {
       const appDate = new Date(app.appliedAt);
       const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
@@ -1390,12 +1427,12 @@ class OptionsPage {
         const data = JSON.stringify(response.data, null, 2);
         const blob = new Blob([data], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
-        
+
         const a = document.createElement('a');
         a.href = url;
         a.download = `hirehack-backup-${new Date().toISOString().split('T')[0]}.json`;
         a.click();
-        
+
         URL.revokeObjectURL(url);
         this.showNotification('Data exported successfully!', 'success');
       } else {
@@ -1408,12 +1445,14 @@ class OptionsPage {
   }
 
   async importData(file) {
-    if (!file) return;
+    if (!file) {
+      return;
+    }
 
     try {
       const text = await file.text();
       const data = JSON.parse(text);
-      
+
       const response = await MessageHandler.sendMessage(MESSAGE_TYPES.IMPORT_DATA, data);
       if (response.success) {
         this.showNotification('Data imported successfully!', 'success');
@@ -1444,9 +1483,9 @@ class OptionsPage {
       z-index: 10000;
       background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#007bff'};
     `;
-    
+
     document.body.appendChild(notification);
-    
+
     setTimeout(() => {
       notification.remove();
     }, 3000);

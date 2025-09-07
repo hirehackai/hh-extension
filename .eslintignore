@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+*.min.js
+
+# Logs
+*.log
+
+# Coverage directory
+coverage/
+
+# Generated files
+*.generated.js
+*.bundle.js
+
+# Third-party libraries
+vendor/
+lib/
+
+# Configuration files (if needed)
+# webpack.config.js
+
+# Test files (if using different linting rules)
+# **/*.test.js
+# **/*.spec.js

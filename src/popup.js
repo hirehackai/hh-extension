@@ -1,6 +1,5 @@
 // Popup interface
 import _ from 'lodash';
-import { StorageManager } from './utils/storage.js';
 import { MessageHandler, ValidationHelper, Logger } from './utils/helpers.js';
 import { MESSAGE_TYPES } from './utils/constants.js';
 
@@ -10,7 +9,7 @@ class PopupInterface {
     this.userProfile = null;
     this.settings = null;
     this.stats = null;
-    
+
     this.init();
   }
 
@@ -20,7 +19,7 @@ class PopupInterface {
       this.setupEventListeners();
       this.renderInterface();
       this.updateStats();
-      
+
       Logger.info('Popup interface initialized');
     } catch (error) {
       Logger.error('Popup initialization failed', error);
@@ -50,7 +49,7 @@ class PopupInterface {
   setupEventListeners() {
     // Tab navigation
     document.querySelectorAll('.tab-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
+      btn.addEventListener('click', e => {
         this.switchTab(e.target.dataset.tab);
       });
     });
@@ -83,7 +82,7 @@ class PopupInterface {
       document.getElementById('import-file').click();
     });
 
-    document.getElementById('import-file')?.addEventListener('change', (e) => {
+    document.getElementById('import-file')?.addEventListener('change', e => {
       this.importData(e.target.files[0]);
     });
 
@@ -609,48 +608,105 @@ class PopupInterface {
   populateData() {
     if (this.userProfile) {
       // Populate profile form using lodash get for safe property access
-      document.getElementById('first-name').value = _.get(this.userProfile, 'personal.firstName', '');
+      document.getElementById('first-name').value = _.get(
+        this.userProfile,
+        'personal.firstName',
+        ''
+      );
       document.getElementById('last-name').value = _.get(this.userProfile, 'personal.lastName', '');
       document.getElementById('email').value = _.get(this.userProfile, 'personal.email', '');
       document.getElementById('phone').value = _.get(this.userProfile, 'personal.phone', '');
       document.getElementById('location').value = _.get(this.userProfile, 'personal.location', '');
-      document.getElementById('current-title').value = _.get(this.userProfile, 'professional.currentTitle', '');
-      document.getElementById('experience').value = _.get(this.userProfile, 'professional.experience', 0);
-      document.getElementById('skills').value = _.get(this.userProfile, 'professional.skills', []).join(', ');
+      document.getElementById('current-title').value = _.get(
+        this.userProfile,
+        'professional.currentTitle',
+        ''
+      );
+      document.getElementById('experience').value = _.get(
+        this.userProfile,
+        'professional.experience',
+        0
+      );
+      document.getElementById('skills').value = _.get(
+        this.userProfile,
+        'professional.skills',
+        []
+      ).join(', ');
     }
 
     if (this.settings) {
       // Populate settings form using lodash get for safe property access
-      document.getElementById('daily-limit').value = _.get(this.settings, 'rateLimit.dailyLimit', 30);
-      document.getElementById('hourly-limit').value = _.get(this.settings, 'rateLimit.hourlyLimit', 10);
-      document.getElementById('skip-cover-letter').checked = _.get(this.settings, 'application.skipCoverLetter', false);
-      document.getElementById('skip-questions').checked = _.get(this.settings, 'application.skipQuestions', false);
-      document.getElementById('auto-answer-basic').checked = _.get(this.settings, 'application.autoAnswerBasic', true);
-      document.getElementById('min-salary').value = _.get(this.settings, 'preferences.salary.min', 0);
-      document.getElementById('max-salary').value = _.get(this.settings, 'preferences.salary.max', 200000);
-      document.getElementById('exclude-keywords').value = _.get(this.settings, 'preferences.excludeKeywords', []).join(', ');
+      document.getElementById('daily-limit').value = _.get(
+        this.settings,
+        'rateLimit.dailyLimit',
+        30
+      );
+      document.getElementById('hourly-limit').value = _.get(
+        this.settings,
+        'rateLimit.hourlyLimit',
+        10
+      );
+      document.getElementById('skip-cover-letter').checked = _.get(
+        this.settings,
+        'application.skipCoverLetter',
+        false
+      );
+      document.getElementById('skip-questions').checked = _.get(
+        this.settings,
+        'application.skipQuestions',
+        false
+      );
+      document.getElementById('auto-answer-basic').checked = _.get(
+        this.settings,
+        'application.autoAnswerBasic',
+        true
+      );
+      document.getElementById('min-salary').value = _.get(
+        this.settings,
+        'preferences.salary.min',
+        0
+      );
+      document.getElementById('max-salary').value = _.get(
+        this.settings,
+        'preferences.salary.max',
+        200000
+      );
+      document.getElementById('exclude-keywords').value = _.get(
+        this.settings,
+        'preferences.excludeKeywords',
+        []
+      ).join(', ');
     }
   }
 
   async updateStats() {
-    if (!this.stats) return;
+    if (!this.stats) {
+      return;
+    }
 
-    document.getElementById('total-applications').textContent = _.get(this.stats, 'totalApplications', 0);
-    document.getElementById('applications-today').textContent = _.get(this.stats, 'applicationsToday', 0);
+    document.getElementById('total-applications').textContent = _.get(
+      this.stats,
+      'totalApplications',
+      0
+    );
+    document.getElementById('applications-today').textContent = _.get(
+      this.stats,
+      'applicationsToday',
+      0
+    );
     document.getElementById('streak-days').textContent = _.get(this.stats, 'streakDays', 0);
-    
+
     const totalApplications = _.get(this.stats, 'totalApplications', 0);
     const successfulApplications = _.get(this.stats, 'successfulApplications', 0);
-    const successRate = totalApplications > 0 
-      ? Math.round((successfulApplications / totalApplications) * 100)
-      : 0;
+    const successRate =
+      totalApplications > 0 ? Math.round((successfulApplications / totalApplications) * 100) : 0;
     document.getElementById('success-rate').textContent = `${successRate}%`;
 
     // Update progress bar
     const dailyLimit = _.get(this.settings, 'rateLimit.dailyLimit', 30);
     const applicationsToday = _.get(this.stats, 'applicationsToday', 0);
     const progress = Math.min((applicationsToday / dailyLimit) * 100, 100);
-    
+
     document.getElementById('daily-progress').style.width = `${progress}%`;
     document.getElementById('daily-count').textContent = applicationsToday;
     document.getElementById('daily-limit').textContent = dailyLimit;
@@ -659,8 +715,7 @@ class PopupInterface {
   async handleQuickStart() {
     try {
       // Get current tab to check if it's LinkedIn
-      const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-      const currentTab = tabs[0];
+      const [currentTab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
       if (!currentTab.url.includes('linkedin.com')) {
         alert('Please navigate to LinkedIn job search page first');
@@ -685,8 +740,7 @@ class PopupInterface {
 
   async handleQuickStop() {
     try {
-      const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-      const currentTab = tabs[0];
+      const [currentTab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
       await chrome.tabs.sendMessage(currentTab.id, {
         type: MESSAGE_TYPES.STOP_AUTO_APPLY
@@ -713,14 +767,18 @@ class PopupInterface {
         professional: {
           ..._.get(this.userProfile, 'professional', {}),
           currentTitle: document.getElementById('current-title').value,
-          experience: parseInt(document.getElementById('experience').value) || 0,
-          skills: document.getElementById('skills').value.split(',').map(s => s.trim()).filter(Boolean)
+          experience: parseInt(document.getElementById('experience').value, 10) || 0,
+          skills: document
+            .getElementById('skills')
+            .value.split(',')
+            .map(s => s.trim())
+            .filter(Boolean)
         }
       };
 
       const errors = ValidationHelper.validateUserProfile(profile);
       if (errors.length > 0) {
-        alert('Please fix the following errors:\n' + errors.join('\n'));
+        alert(`Please fix the following errors:\n${errors.join('\n')}`);
         return;
       }
 
@@ -743,8 +801,8 @@ class PopupInterface {
         ...this.settings,
         rateLimit: {
           ..._.get(this.settings, 'rateLimit', {}),
-          dailyLimit: parseInt(document.getElementById('daily-limit').value),
-          hourlyLimit: parseInt(document.getElementById('hourly-limit').value)
+          dailyLimit: parseInt(document.getElementById('daily-limit').value, 10),
+          hourlyLimit: parseInt(document.getElementById('hourly-limit').value, 10)
         },
         application: {
           ..._.get(this.settings, 'application', {}),
@@ -755,11 +813,14 @@ class PopupInterface {
         preferences: {
           ..._.get(this.settings, 'preferences', {}),
           salary: {
-            min: parseInt(document.getElementById('min-salary').value) || 0,
-            max: parseInt(document.getElementById('max-salary').value) || 200000
+            min: parseInt(document.getElementById('min-salary').value, 10) || 0,
+            max: parseInt(document.getElementById('max-salary').value, 10) || 200000
           },
-          excludeKeywords: document.getElementById('exclude-keywords').value
-            .split(',').map(s => s.trim()).filter(Boolean)
+          excludeKeywords: document
+            .getElementById('exclude-keywords')
+            .value.split(',')
+            .map(s => s.trim())
+            .filter(Boolean)
         }
       };
 
@@ -784,12 +845,12 @@ class PopupInterface {
         const data = JSON.stringify(response.data, null, 2);
         const blob = new Blob([data], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
-        
+
         const a = document.createElement('a');
         a.href = url;
         a.download = `hirehack-data-${new Date().toISOString().split('T')[0]}.json`;
         a.click();
-        
+
         URL.revokeObjectURL(url);
       } else {
         alert('Failed to export data. Please try again.');
@@ -801,12 +862,14 @@ class PopupInterface {
   }
 
   async importData(file) {
-    if (!file) return;
+    if (!file) {
+      return;
+    }
 
     try {
       const text = await file.text();
       const data = JSON.parse(text);
-      
+
       const response = await MessageHandler.sendMessage(MESSAGE_TYPES.IMPORT_DATA, data);
       if (response.success) {
         alert('Data imported successfully!');

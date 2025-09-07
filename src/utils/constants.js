@@ -5,23 +5,23 @@ export const MESSAGE_TYPES = {
   STOP_APPLICATION: 'stop_application',
   PAUSE_APPLICATION: 'pause_application',
   RESUME_APPLICATION: 'resume_application',
-  
+
   // Job Processing
   JOB_APPLIED: 'job_applied',
   APPLICATION_FAILED: 'application_failed',
   JOB_SKIPPED: 'job_skipped',
   JOBS_DETECTED: 'jobs_detected',
-  
+
   // Status Updates
   UPDATE_STATUS: 'update_status',
   UPDATE_PROGRESS: 'update_progress',
-  
+
   // Data Operations
   GET_USER_PROFILE: 'get_user_profile',
   SAVE_APPLICATION_DATA: 'save_application_data',
   GET_SETTINGS: 'get_settings',
   GET_STATS: 'get_stats',
-  
+
   // Platform Events
   PLATFORM_DETECTED: 'platform_detected',
   PLATFORM_CHANGED: 'platform_changed'
@@ -88,7 +88,8 @@ export const LINKEDIN_SELECTORS = {
   location: '.job-search-card__location, .job-search-card__location-text',
   salary: '.job-search-card__salary-info',
   applyModal: '.jobs-easy-apply-modal',
-  nextButton: '.artdeco-button--primary[aria-label*="Continue"], .artdeco-button--primary[aria-label*="Review"], .artdeco-button--primary[aria-label*="Submit"]',
+  nextButton:
+    '.artdeco-button--primary[aria-label*="Continue"], .artdeco-button--primary[aria-label*="Review"], .artdeco-button--primary[aria-label*="Submit"]',
   submitButton: '.artdeco-button--primary[aria-label*="Submit"]',
   formFields: 'input, textarea, select'
 };

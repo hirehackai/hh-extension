@@ -9,7 +9,9 @@
     "clean": "rimraf dist",
     "package": "npm run build && cd dist && zip -r ../hirehack-extension.zip .",
     "lint": "eslint src --ext .js",
-    "format": "prettier --write src/**/*.{js,html,css}"
+    "lint:fix": "eslint src --ext .js --fix",
+    "format": "prettier --write src/**/*.{js,html,css}",
+    "format:check": "prettier --check src/**/*.{js,html,css}"
   },
   "devDependencies": {
     "@babel/core": "^7.22.0",

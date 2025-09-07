@@ -10,14 +10,14 @@ class LinkedInAutomation {
     this.rateLimiter = new RateLimiter();
     this.ui = null;
     this.observer = null;
-    
+
     this.init();
   }
 
   async init() {
     try {
       Logger.info('LinkedIn automation initializing...');
-      
+
       // Only initialize on LinkedIn job pages
       if (!URLHelper.isLinkedInJobsPage()) {
         return;
@@ -26,7 +26,7 @@ class LinkedInAutomation {
       await this.setupUI();
       this.setupMessageHandlers();
       this.observePageChanges();
-      
+
       Logger.info('LinkedIn automation initialized');
     } catch (error) {
       Logger.error('LinkedIn automation initialization failed', error);
@@ -36,38 +36,38 @@ class LinkedInAutomation {
   setupMessageHandlers() {
     MessageHandler.setupMessageListener(async (message, sender, sendResponse) => {
       const { type, data } = message;
-      
+
       switch (type) {
         case MESSAGE_TYPES.START_AUTO_APPLY:
           await this.startAutoApply(data);
           sendResponse({ success: true });
           break;
-          
+
         case MESSAGE_TYPES.STOP_AUTO_APPLY:
           this.stopAutoApply();
           sendResponse({ success: true });
           break;
-          
+
         case MESSAGE_TYPES.PAUSE_AUTO_APPLY:
           this.pauseAutoApply();
           sendResponse({ success: true });
           break;
-          
+
         case MESSAGE_TYPES.RESUME_AUTO_APPLY:
           this.resumeAutoApply();
           sendResponse({ success: true });
           break;
-          
+
         case MESSAGE_TYPES.GET_JOB_DATA:
           const jobData = LinkedInHelper.extractJobData();
           sendResponse({ success: true, data: jobData });
           break;
-          
+
         case MESSAGE_TYPES.CHECK_EASY_APPLY:
           const isEasyApply = LinkedInHelper.isEasyApplyJob();
           const isApplied = LinkedInHelper.isJobAlreadyApplied();
-          sendResponse({ 
-            success: true, 
+          sendResponse({
+            success: true,
             data: { isEasyApply, isApplied }
           });
           break;
@@ -130,8 +130,8 @@ class LinkedInAutomation {
     document.head.appendChild(style);
 
     // Add event listeners
-    ui.addEventListener('click', (e) => {
-      const action = e.target.dataset.action;
+    ui.addEventListener('click', e => {
+      const { action } = e.target.dataset;
       this.handleUIAction(action);
     });
 
@@ -294,30 +294,30 @@ class LinkedInAutomation {
 
     const header = this.ui.querySelector('.hh-header');
 
-    header.addEventListener('mousedown', (e) => {
-      if (e.target.closest('.hh-close')) return;
-      
+    header.addEventListener('mousedown', e => {
+      if (e.target.closest('.hh-close')) { return; }
+
       isDragging = true;
       startX = e.clientX;
       startY = e.clientY;
-      
+
       const rect = this.ui.getBoundingClientRect();
       initialX = rect.left;
       initialY = rect.top;
-      
+
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
       e.preventDefault();
     });
 
-    const handleMouseMove = (e) => {
-      if (!isDragging) return;
-      
+    const handleMouseMove = e => {
+      if (!isDragging) { return; }
+
       const deltaX = e.clientX - startX;
       const deltaY = e.clientY - startY;
-      
-      this.ui.style.left = (initialX + deltaX) + 'px';
-      this.ui.style.top = (initialY + deltaY) + 'px';
+
+      this.ui.style.left = `${initialX + deltaX}px`;
+      this.ui.style.top = `${initialY + deltaY}px`;
       this.ui.style.right = 'auto';
     };
 
@@ -349,7 +349,7 @@ class LinkedInAutomation {
     try {
       // Check with background service if we can start
       const response = await MessageHandler.sendMessage(MESSAGE_TYPES.START_AUTO_APPLY);
-      
+
       if (!response.success) {
         this.updateStatus('error', response.error);
         return;
@@ -359,10 +359,10 @@ class LinkedInAutomation {
       this.isPaused = false;
       this.updateUIState();
       this.updateStatus('active', 'Auto applying...');
-      
+
       // Start the automation process
       this.processCurrentPage();
-      
+
     } catch (error) {
       Logger.error('Start auto apply error', error);
       this.updateStatus('error', 'Failed to start');
@@ -374,7 +374,7 @@ class LinkedInAutomation {
     this.isPaused = false;
     this.updateUIState();
     this.updateStatus('ready', 'Stopped');
-    
+
     MessageHandler.sendMessage(MESSAGE_TYPES.STOP_AUTO_APPLY);
   }
 
@@ -392,7 +392,7 @@ class LinkedInAutomation {
   }
 
   async processCurrentPage() {
-    if (!this.isActive || this.isPaused) return;
+    if (!this.isActive || this.isPaused) { return; }
 
     try {
       // Check if this is a job detail page
@@ -456,10 +456,10 @@ class LinkedInAutomation {
       }
 
       DOMHelper.simulateClick(easyApplyButton);
-      
+
       // Wait for application modal
       await DOMHelper.wait(2000);
-      
+
       // Handle application flow
       await this.handleApplicationFlow(jobData);
 
@@ -473,11 +473,11 @@ class LinkedInAutomation {
     try {
       // Look for submit button or next button
       const submitButton = DOMHelper.getVisibleElement('[data-easy-apply-next-btn], [aria-label*="Submit"], [data-easy-apply-submit-btn]');
-      
+
       if (submitButton) {
         DOMHelper.simulateClick(submitButton);
         await DOMHelper.wait(1000);
-        
+
         // Check if application was successful
         const successIndicator = document.querySelector('[data-easy-apply-success-header]');
         if (successIndicator) {
@@ -499,13 +499,13 @@ class LinkedInAutomation {
     // This is a simplified version - in a real implementation,
     // you'd want to handle various question types based on user profile
     Logger.info('Handling application questions...');
-    
+
     // For now, just try to submit if there are no required fields
     const submitButton = DOMHelper.getVisibleElement('[data-easy-apply-submit-btn]');
     if (submitButton && !submitButton.disabled) {
       DOMHelper.simulateClick(submitButton);
       await DOMHelper.wait(2000);
-      
+
       const successIndicator = document.querySelector('[data-easy-apply-success-header]');
       if (successIndicator) {
         await this.handleApplicationSuccess(jobData);
@@ -519,7 +519,7 @@ class LinkedInAutomation {
 
   async handleApplicationSuccess(jobData) {
     Logger.info('Application successful', jobData);
-    
+
     // Record successful application
     await MessageHandler.sendMessage(MESSAGE_TYPES.APPLICATION_COMPLETED, {
       jobData,
@@ -527,7 +527,7 @@ class LinkedInAutomation {
     });
 
     this.updateSessionStats();
-    
+
     // Close application modal
     const closeButton = DOMHelper.getVisibleElement('[data-easy-apply-close-btn], [aria-label*="Dismiss"]');
     if (closeButton) {
@@ -540,7 +540,7 @@ class LinkedInAutomation {
 
   async handleApplicationError(error, jobData = null) {
     Logger.error('Application error', error);
-    
+
     if (jobData) {
       await MessageHandler.sendMessage(MESSAGE_TYPES.APPLICATION_COMPLETED, {
         jobData,
@@ -603,7 +603,7 @@ class LinkedInAutomation {
   updateStatus(status, message) {
     const indicator = this.ui.querySelector('#hh-status-indicator');
     const text = this.ui.querySelector('#hh-status-text');
-    
+
     indicator.className = `hh-status-indicator ${status}`;
     text.textContent = message;
   }
@@ -612,7 +612,7 @@ class LinkedInAutomation {
     const currentJobDiv = this.ui.querySelector('#hh-current-job');
     const titleEl = this.ui.querySelector('#hh-job-title');
     const companyEl = this.ui.querySelector('#hh-job-company');
-    
+
     titleEl.textContent = jobData.title;
     companyEl.textContent = jobData.company;
     currentJobDiv.style.display = 'block';
@@ -631,7 +631,7 @@ class LinkedInAutomation {
   }
 
   observePageChanges() {
-    this.observer = new MutationObserver((mutations) => {
+    this.observer = new MutationObserver(mutations => {
       // Handle page navigation and dynamic content changes
       if (this.isActive && !this.isPaused) {
         const hasJobContent = document.querySelector(LINKEDIN_SELECTORS.JOB_TITLE);

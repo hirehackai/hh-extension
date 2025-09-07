@@ -1,6 +1,6 @@
 // Background service worker
 import { StorageManager } from './utils/storage.js';
-import { MessageHandler, Logger } from './utils/helpers.js';
+import { Logger } from './utils/helpers.js';
 import { MESSAGE_TYPES, APPLICATION_STATUS, DEFAULT_SETTINGS } from './utils/constants.js';
 
 class BackgroundService {
@@ -13,7 +13,7 @@ class BackgroundService {
   async init() {
     try {
       Logger.info('Background service initializing...');
-      
+
       // Initialize default settings if not exists
       const settings = await StorageManager.getSettings();
       if (!settings.rateLimit) {
@@ -22,7 +22,7 @@ class BackgroundService {
 
       // Reset daily session if needed
       await this.resetDailySessionIfNeeded();
-      
+
       this.isInitialized = true;
       Logger.info('Background service initialized successfully');
     } catch (error) {
@@ -37,7 +37,7 @@ class BackgroundService {
     });
 
     // Handle extension installation/update
-    chrome.runtime.onInstalled.addListener((details) => {
+    chrome.runtime.onInstalled.addListener(details => {
       this.handleInstallation(details);
     });
 
@@ -51,7 +51,7 @@ class BackgroundService {
 
   async handleMessage(message, sender, sendResponse) {
     const { type, data } = message;
-    
+
     try {
       switch (type) {
         case MESSAGE_TYPES.GET_USER_PROFILE:
@@ -126,8 +126,8 @@ class BackgroundService {
       // Check rate limit
       const canApply = await this.checkRateLimit();
       if (!canApply.allowed) {
-        sendResponse({ 
-          success: false, 
+        sendResponse({
+          success: false,
           error: 'Rate limit exceeded',
           rateLimitInfo: canApply
         });
@@ -146,7 +146,6 @@ class BackgroundService {
 
       Logger.info('Auto-apply session started');
       sendResponse({ success: true });
-
     } catch (error) {
       Logger.error('Start auto-apply error', error);
       sendResponse({ success: false, error: error.message });
@@ -166,7 +165,6 @@ class BackgroundService {
 
       Logger.info('Auto-apply session stopped');
       sendResponse({ success: true });
-
     } catch (error) {
       Logger.error('Stop auto-apply error', error);
       sendResponse({ success: false, error: error.message });
@@ -176,7 +174,7 @@ class BackgroundService {
   async handleApplicationCompleted(data, sendResponse) {
     try {
       const { jobData, status, error } = data;
-      
+
       // Record application in history
       await StorageManager.addApplicationRecord({
         jobData,
@@ -193,7 +191,8 @@ class BackgroundService {
           ...stats.platformStats,
           linkedin: {
             applied: stats.platformStats.linkedin.applied + 1,
-            success: stats.platformStats.linkedin.success + (status === APPLICATION_STATUS.SUCCESS ? 1 : 0)
+            success:
+              stats.platformStats.linkedin.success + (status === APPLICATION_STATUS.SUCCESS ? 1 : 0)
           }
         }
       };
@@ -218,7 +217,6 @@ class BackgroundService {
 
       Logger.info('Application recorded', { jobData, status });
       sendResponse({ success: true });
-
     } catch (error) {
       Logger.error('Application completion handling error', error);
       sendResponse({ success: false, error: error.message });
@@ -229,14 +227,15 @@ class BackgroundService {
     try {
       const settings = await StorageManager.getSettings();
       const session = await StorageManager.getSession();
-      
+
       // Reset daily applications if new day
       await this.resetDailySessionIfNeeded();
       const updatedSession = await StorageManager.getSession();
-      
+
       const dailyLimitReached = updatedSession.applicationsToday >= settings.rateLimit.dailyLimit;
-      const hourlyLimitReached = updatedSession.currentSession.applicationsThisSession >= settings.rateLimit.hourlyLimit;
-      
+      const hourlyLimitReached =
+        updatedSession.currentSession.applicationsThisSession >= settings.rateLimit.hourlyLimit;
+
       return {
         allowed: !dailyLimitReached && !hourlyLimitReached,
         dailyApplications: updatedSession.applicationsToday,
@@ -244,7 +243,6 @@ class BackgroundService {
         sessionApplications: updatedSession.currentSession.applicationsThisSession,
         hourlyLimit: settings.rateLimit.hourlyLimit
       };
-      
     } catch (error) {
       Logger.error('Rate limit check error', error);
       return { allowed: false, error: error.message };
@@ -254,7 +252,7 @@ class BackgroundService {
   async resetDailySessionIfNeeded() {
     const session = await StorageManager.getSession();
     const today = new Date().toDateString();
-    
+
     if (session.lastResetDate !== today) {
       await StorageManager.updateSession({
         applicationsToday: 0,
@@ -266,19 +264,19 @@ class BackgroundService {
           isPaused: false
         }
       });
-      
+
       // Update streak
       const stats = await StorageManager.getStats();
       const lastActiveDate = new Date(stats.lastActiveDate).toDateString();
       const yesterday = new Date(Date.now() - 86400000).toDateString();
-      
-      let streakDays = stats.streakDays;
+
+      let { streakDays } = stats;
       if (lastActiveDate === yesterday) {
         streakDays += 1;
       } else if (lastActiveDate !== today) {
         streakDays = 0;
       }
-      
+
       await StorageManager.updateStats({ streakDays });
       Logger.info('Daily session reset completed');
     }
@@ -300,13 +298,12 @@ class BackgroundService {
   async handleInstallation(details) {
     if (details.reason === 'install') {
       Logger.info('Extension installed');
-      
+
       // Initialize default data
       await StorageManager.saveSettings(DEFAULT_SETTINGS);
-      
+
       // Open options page
       chrome.tabs.create({ url: chrome.runtime.getURL('options.html') });
-      
     } else if (details.reason === 'update') {
       Logger.info('Extension updated');
       // Handle any migration logic here if needed
