@@ -240,16 +240,68 @@ To become the leading Chrome extension for automating LinkedIn job applications 
 ## 11. Appendices
 
 ### 11.1 Technical Architecture Diagrams
-*(To be created during development phase)*
+*See [TECHNICAL_ARCHITECTURE.md](./TECHNICAL_ARCHITECTURE.md) for complete technical specifications*
+
+#### High-Level System Overview
+- Chrome Extension with Manifest V3 architecture
+- Background Service Worker for data processing
+- Content Scripts for platform DOM interaction
+- Popup UI with draggable interface
+- Local-first data storage approach
+
+#### Key Components
+- **Background**: Data management, rate limiting, job tracking
+- **Content**: Platform adapters for LinkedIn/Indeed, form filling
+- **Popup**: Control interface, statistics, draggable UI
+- **Options**: User profile, settings, data export
+
+#### Data Flow
+User Profile (JSON) → Job Detection → Form Filling → Application Tracking
 
 ### 11.2 User Flow Mockups
-*(To be created during design phase)*
+*See [TECHNICAL_ARCHITECTURE.md](./TECHNICAL_ARCHITECTURE.md) for detailed UI specifications*
+
+#### Installation & Setup Flow
+Chrome Web Store → Install → Welcome → Profile Setup → Ready to Use
+
+#### Daily Usage Flow
+LinkedIn → Extension Activates → Draggable Popup → Start/Pause/Stop → View Results
+
+#### Settings Management
+Popup Settings → Options Page → Update Profile → Save → Resume Job Search
 
 ### 11.3 Competitive Analysis Details
-*(To be updated quarterly)*
+*See [TECHNICAL_ARCHITECTURE.md](./TECHNICAL_ARCHITECTURE.md) for technical comparisons*
+
+#### Market Positioning
+HireHack differentiates through:
+- **Privacy-first**: Local data storage, no external tracking
+- **One-time cost**: $9.99 vs. monthly subscriptions ($15-30/month)
+- **Platform expandable**: Built for multi-platform support
+- **Compliance focused**: Rate limiting and ToS adherence
+- **User controlled**: Full transparency and data ownership
 
 ### 11.4 Legal and Compliance Documentation
-*(To be maintained with legal team)*
+*See [TECHNICAL_ARCHITECTURE.md](./TECHNICAL_ARCHITECTURE.md) for security implementation details*
+
+#### LinkedIn Compliance Summary
+- ✅ Form filling assistance (like browser auto-fill)
+- ✅ User-initiated actions with explicit consent
+- ✅ Rate limiting (3 applications/day free, delays between apps)
+- ✅ No data scraping or LinkedIn data storage
+- ✅ Respectful automation with human-like patterns
+
+#### Privacy Approach
+- **Local-only data storage** (no external servers)
+- **Minimal data collection** (user profile, application history)
+- **User data ownership** (export/delete functionality)
+- **No third-party sharing** or tracking
+
+#### Chrome Web Store Requirements
+- Manifest V3 compliance
+- Clear permission requests
+- Privacy policy for local storage
+- Accurate functionality description
 
 ---
 
