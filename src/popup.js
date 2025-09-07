@@ -1,7 +1,7 @@
 // Popup interface
-import { StorageManager } from '../utils/storage.js';
-import { MessageHandler, ValidationHelper, Logger } from '../utils/helpers.js';
-import { MESSAGE_TYPES } from '../utils/constants.js';
+import { StorageManager } from './utils/storage.js';
+import { MessageHandler, ValidationHelper, Logger } from './utils/helpers.js';
+import { MESSAGE_TYPES } from './utils/constants.js';
 
 class PopupInterface {
   constructor() {

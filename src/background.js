@@ -1,7 +1,7 @@
 // Background service worker
-import { StorageManager } from '../utils/storage.js';
-import { MessageHandler, Logger } from '../utils/helpers.js';
-import { MESSAGE_TYPES, APPLICATION_STATUS, DEFAULT_SETTINGS } from '../utils/constants.js';
+import { StorageManager } from './utils/storage.js';
+import { MessageHandler, Logger } from './utils/helpers.js';
+import { MESSAGE_TYPES, APPLICATION_STATUS, DEFAULT_SETTINGS } from './utils/constants.js';
 
 class BackgroundService {
   constructor() {

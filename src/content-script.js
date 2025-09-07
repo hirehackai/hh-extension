@@ -1,6 +1,6 @@
 // Content script for LinkedIn automation
-import { DOMHelper, LinkedInHelper, URLHelper, MessageHandler, RateLimiter, Logger } from '../utils/helpers.js';
-import { MESSAGE_TYPES, APPLICATION_STATUS, LINKEDIN_SELECTORS } from '../utils/constants.js';
+import { DOMHelper, LinkedInHelper, URLHelper, MessageHandler, RateLimiter, Logger } from './utils/helpers.js';
+import { MESSAGE_TYPES, APPLICATION_STATUS, LINKEDIN_SELECTORS } from './utils/constants.js';
 
 class LinkedInAutomation {
   constructor() {

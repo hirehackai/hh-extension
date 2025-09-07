@@ -18,6 +18,12 @@ module.exports = (env, argv) => {
       filename: '[name].js',
       clean: true
     },
+    resolve: {
+      extensions: ['.js'],
+      alias: {
+        '@': path.resolve(__dirname, 'src')
+      }
+    },
     module: {
       rules: [
         {
