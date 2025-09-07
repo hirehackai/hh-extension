@@ -5,13 +5,13 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = (env, argv) => {
   const isProduction = argv.mode === 'production';
-  
+
   return {
     entry: {
-      'background': './src/background.js',
+      background: './src/background.js',
       'content-script': './src/content-script.js',
-      'popup': './src/popup.js',
-      'options': './src/options.js'
+      popup: './src/popup.js',
+      options: './src/options.js'
     },
     output: {
       path: path.resolve(__dirname, 'dist'),
