@@ -5,6 +5,7 @@ export const MESSAGE_TYPES = {
   STOP_APPLICATION: 'stop_application',
   PAUSE_APPLICATION: 'pause_application',
   RESUME_APPLICATION: 'resume_application',
+  CHECK_RATE_LIMIT: 'check_rate_limit',
 
   // Job Processing
   JOB_APPLIED: 'job_applied',
@@ -82,10 +83,10 @@ export const DEFAULT_SETTINGS = {
 
 export const LINKEDIN_SELECTORS = {
   jobListings: '.job-search-card',
-  easyApplyButton: '.jobs-apply-button--top-card, .jobs-apply-button',
+  easyApplyButton: '#jobs-apply-button-id',
   jobTitle: '.job-search-card__title, .job-title',
-  company: '.job-search-card__subtitle-link, .job-search-card__subtitle',
-  location: '.job-search-card__location, .job-search-card__location-text',
+  companyName: '.job-search-card__subtitle-link, .job-search-card__subtitle',
+  jobLocation: '.job-search-card__location, .job-search-card__location-text',
   salary: '.job-search-card__salary-info',
   applyModal: '.jobs-easy-apply-modal',
   nextButton:

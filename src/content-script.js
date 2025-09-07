@@ -86,6 +86,13 @@ class LinkedInAutomation {
     // Create draggable automation UI
     this.ui = this.createAutomationUI();
     document.body.appendChild(this.ui);
+    // Add event listeners
+    if (this.ui) {
+      this.ui.addEventListener('click', e => {
+        const { action } = e.target.dataset;
+        this.handleUIAction(action);
+      });
+    }
     this.makeUIDraggable();
   }
 
@@ -135,13 +142,6 @@ class LinkedInAutomation {
     const style = document.createElement('style');
     style.textContent = this.getUIStyles();
     document.head.appendChild(style);
-
-    // Add event listeners
-    ui.addEventListener('click', e => {
-      const { action } = e.target.dataset;
-      this.handleUIAction(action);
-    });
-
     return ui;
   }
 
@@ -360,6 +360,7 @@ class LinkedInAutomation {
     try {
       // Check with background service if we can start
       const response = await MessageHandler.sendMessage(MESSAGE_TYPES.START_AUTO_APPLY);
+      Logger.info('Start auto apply response', response);
 
       if (!response.success) {
         this.updateStatus('error', response.error);
@@ -376,10 +377,15 @@ class LinkedInAutomation {
     } catch (error) {
       Logger.error('Start auto apply error', error);
       this.updateStatus('error', 'Failed to start');
+
+      this.isActive = false;
+      this.isPaused = false;
+      this.updateUIState();
     }
   }
 
   stopAutoApply() {
+    console.log('Stopping auto apply...');
     this.isActive = false;
     this.isPaused = false;
     this.updateUIState();
@@ -411,6 +417,7 @@ class LinkedInAutomation {
       if (!URLHelper.isLinkedInJobDetailPage()) {
         this.updateStatus('active', 'Navigating to jobs...');
         await this.navigateToNextJob();
+        Logger.warn('Not a job detail page, navigating to next job');
         return;
       }
 
@@ -442,11 +449,13 @@ class LinkedInAutomation {
 
       // Check rate limit
       const rateLimitCheck = await MessageHandler.sendMessage(MESSAGE_TYPES.CHECK_RATE_LIMIT);
-      if (!rateLimitCheck.data.canApply) {
-        this.updateStatus('error', 'Rate limit reached');
-        this.stopAutoApply();
-        return;
-      }
+      //TODO: review this logic
+      // if (rateLimitCheck.data && !rateLimitCheck.data.canApply?.allowed) {
+      //   this.updateStatus('error', 'Rate limit reached');
+      //   this.stopAutoApply();
+      //   Logger.warn('Rate limit reached, stopping automation');
+      //   return;
+      // }
 
       // Apply to the job
       await this.applyToJob(jobData);
@@ -651,7 +660,7 @@ class LinkedInAutomation {
     this.observer = new MutationObserver(mutations => {
       // Handle page navigation and dynamic content changes
       if (this.isActive && !this.isPaused) {
-        const hasJobContent = document.querySelector(LINKEDIN_SELECTORS.JOB_TITLE);
+        const hasJobContent = document.querySelector(LINKEDIN_SELECTORS.jobTitle);
         if (hasJobContent && URLHelper.isLinkedInJobDetailPage()) {
           // Debounce processing to avoid multiple triggers
           clearTimeout(this.processTimeout);
@@ -670,10 +679,9 @@ class LinkedInAutomation {
 }
 
 // Initialize the automation when the page loads
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => {
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+  const existingUI = document.getElementById('hirehack-automation-ui');
+  if (!existingUI) {
     new LinkedInAutomation();
-  });
-} else if (document.readyState === 'complete' || document.readyState === 'interactive') {
-  new LinkedInAutomation();
+  }
 }

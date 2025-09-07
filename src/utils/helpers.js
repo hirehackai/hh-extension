@@ -80,9 +80,9 @@ export class DOMHelper {
 export class LinkedInHelper {
   static extractJobData() {
     try {
-      const jobTitle = document.querySelector(LINKEDIN_SELECTORS.JOB_TITLE)?.textContent?.trim();
-      const company = document.querySelector(LINKEDIN_SELECTORS.COMPANY_NAME)?.textContent?.trim();
-      const location = document.querySelector(LINKEDIN_SELECTORS.JOB_LOCATION)?.textContent?.trim();
+      const jobTitle = document.querySelector(LINKEDIN_SELECTORS.jobTitle)?.textContent?.trim();
+      const company = document.querySelector(LINKEDIN_SELECTORS.companyName)?.textContent?.trim();
+      const location = document.querySelector(LINKEDIN_SELECTORS.jobLocation)?.textContent?.trim();
       const description = document
         .querySelector(LINKEDIN_SELECTORS.JOB_DESCRIPTION)
         ?.textContent?.trim();
@@ -103,11 +103,11 @@ export class LinkedInHelper {
   }
 
   static isEasyApplyJob() {
-    return !!document.querySelector(LINKEDIN_SELECTORS.EASY_APPLY_BUTTON);
+    return !!document.querySelector(LINKEDIN_SELECTORS.easyApplyButton);
   }
 
   static getEasyApplyButton() {
-    return DOMHelper.getVisibleElement(LINKEDIN_SELECTORS.EASY_APPLY_BUTTON);
+    return DOMHelper.getVisibleElement(LINKEDIN_SELECTORS.easyApplyButton);
   }
 
   static isJobAlreadyApplied() {
@@ -173,7 +173,9 @@ export class RateLimiter {
   }
 
   getTimeUntilNextAction() {
-    if (this.actions.length < this.maxActions) { return 0; }
+    if (this.actions.length < this.maxActions) {
+      return 0;
+    }
 
     const oldestAction = Math.min(...this.actions);
     const timeUntilExpiry = this.timeWindow - (Date.now() - oldestAction);
