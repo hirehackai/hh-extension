@@ -16,8 +16,11 @@ class PopupInterface {
   async init() {
     try {
       await this.loadData();
-      this.setupEventListeners();
       this.renderInterface();
+      // Wait for DOM to be fully rendered before setting up event listeners
+      setTimeout(() => {
+        this.setupEventListeners();
+      }, 0);
       this.updateStats();
 
       Logger.info('Popup interface initialized');
@@ -98,7 +101,7 @@ class PopupInterface {
       <div class="popup-container">
         <header class="popup-header">
           <div class="logo">
-            <img src="icons/icon32.png" alt="HireHack">
+            <img src="icons/icon.png" alt="HireHack">
             <span>HireHack</span>
           </div>
           <div class="version">v1.0.0</div>

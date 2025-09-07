@@ -51,7 +51,7 @@ class OptionsPage {
       <div class="options-container">
         <header class="options-header">
           <div class="logo">
-            <img src="icons/icon32.png" alt="HireHack">
+            <img src="icons/icon.png" alt="HireHack">
             <h1>HireHack Options</h1>
           </div>
           <div class="version">Version 1.0.0</div>
