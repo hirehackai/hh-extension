@@ -84,7 +84,7 @@ export class LinkedInHelper {
       const company = document.querySelector(LINKEDIN_SELECTORS.companyName)?.textContent?.trim();
       const location = document.querySelector(LINKEDIN_SELECTORS.jobLocation)?.textContent?.trim();
       const description = document
-        .querySelector(LINKEDIN_SELECTORS.JOB_DESCRIPTION)
+        .querySelector(LINKEDIN_SELECTORS.jobDescription)
         ?.textContent?.trim();
 
       return {
@@ -111,7 +111,7 @@ export class LinkedInHelper {
   }
 
   static isJobAlreadyApplied() {
-    const appliedIndicator = document.querySelector(LINKEDIN_SELECTORS.APPLIED_INDICATOR);
+    const appliedIndicator = document.querySelector(LINKEDIN_SELECTORS.appliedIndicator);
     return !!appliedIndicator;
   }
 

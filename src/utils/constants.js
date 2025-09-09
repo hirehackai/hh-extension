@@ -84,13 +84,15 @@ export const DEFAULT_SETTINGS = {
 export const LINKEDIN_SELECTORS = {
   jobListings: '.job-search-card',
   easyApplyButton: '#jobs-apply-button-id',
-  jobTitle: '.job-search-card__title, .job-title',
-  companyName: '.job-search-card__subtitle-link, .job-search-card__subtitle',
-  jobLocation: '.job-search-card__location, .job-search-card__location-text',
+  jobTitle: '.job-details-jobs-unified-top-card__job-title',
+  companyName: '.job-details-jobs-unified-top-card__company-name',
+  jobLocation: '.job-details-jobs-unified-top-card__tertiary-description-container > span > span',
   salary: '.job-search-card__salary-info',
   applyModal: '.jobs-easy-apply-modal',
   nextButton:
     '.artdeco-button--primary[aria-label*="Continue"], .artdeco-button--primary[aria-label*="Review"], .artdeco-button--primary[aria-label*="Submit"]',
   submitButton: '.artdeco-button--primary[aria-label*="Submit"]',
-  formFields: 'input, textarea, select'
+  formFields: 'input, textarea, select',
+  jobDescription: '#job-details > div',
+  appliedIndicator: '.jobs-unified-top-card__job-status'
 };
