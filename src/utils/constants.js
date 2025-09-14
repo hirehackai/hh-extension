@@ -83,7 +83,8 @@ export const DEFAULT_SETTINGS = {
 
 export const LINKEDIN_SELECTORS = {
   jobListings: '.job-search-card',
-  easyApplyButton: '#jobs-apply-button-id',
+  // easyApplyButton: '#jobs-apply-button-id',
+  easyApplyButton: '[data-view-name="job-apply-button"]',
   jobTitle: '.job-details-jobs-unified-top-card__job-title',
   companyName: '.job-details-jobs-unified-top-card__company-name',
   jobLocation: '.job-details-jobs-unified-top-card__tertiary-description-container > span > span',
