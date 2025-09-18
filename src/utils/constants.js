@@ -39,13 +39,7 @@ export const STORAGE_KEYS = {
 export const DEFAULT_SETTINGS = {
   dailyLimit: 3,
   enabledPlatforms: ['linkedin'],
-  autoStart: false,
-  notifications: true,
-  rateLimiting: {
-    minDelay: 30000, // 30 seconds
-    maxDelay: 120000, // 2 minutes
-    enabled: true
-  }
+  autoStart: false
 };
 
 export const LINKEDIN_SELECTORS = {

@@ -181,12 +181,7 @@ const StorageSchema = {
     dailyLimit: number,
     enabledPlatforms: string[],
     autoStart: boolean,
-    notifications: boolean,
-    rateLimiting: {
-      minDelay: number,
-      maxDelay: number,
-      enabled: boolean
-    }
+    notifications: boolean
   },
 
   // Usage Statistics
