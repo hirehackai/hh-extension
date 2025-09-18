@@ -1,12 +1,11 @@
 // Popup interface
 import _ from 'lodash';
-import { MessageHandler, ValidationHelper, Logger } from './utils/helpers.js';
+import { MessageHandler, Logger } from './utils/helpers.js';
 import { MESSAGE_TYPES } from './utils/constants.js';
 
 class PopupInterface {
   constructor() {
     this.currentTab = 'dashboard';
-    this.userProfile = null;
     this.settings = null;
     this.stats = null;
     this.init();
@@ -30,19 +29,16 @@ class PopupInterface {
 
   async loadData() {
     try {
-      const [profileResponse, settingsResponse, statsResponse] = await Promise.all([
-        MessageHandler.sendMessage(MESSAGE_TYPES.GET_USER_PROFILE),
+      const [settingsResponse, statsResponse] = await Promise.all([
         MessageHandler.sendMessage(MESSAGE_TYPES.GET_SETTINGS),
         MessageHandler.sendMessage(MESSAGE_TYPES.GET_STATS)
       ]);
 
-      this.userProfile = profileResponse?.data || this.getDefaultProfile();
       this.settings = settingsResponse?.data || this.getDefaultSettings();
       this.stats = statsResponse?.data || this.getDefaultStats();
     } catch (error) {
       Logger.error('Failed to load popup data', error);
       // Set defaults in case of error
-      this.userProfile = this.getDefaultProfile();
       this.settings = this.getDefaultSettings();
       this.stats = this.getDefaultStats();
     }
@@ -68,11 +64,6 @@ class PopupInterface {
     // Settings
     document.getElementById('save-settings-btn')?.addEventListener('click', () => {
       this.saveSettings();
-    });
-
-    // Profile
-    document.getElementById('save-profile-btn')?.addEventListener('click', () => {
-      this.saveProfile();
     });
 
     // Data management
@@ -102,13 +93,11 @@ class PopupInterface {
 
         <nav class="popup-nav">
           <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
-          <button class="tab-btn" data-tab="profile">Profile</button>
           <button class="tab-btn" data-tab="settings">Settings</button>
         </nav>
 
         <main class="popup-main">
           ${this.renderDashboardTab()}
-          ${this.renderProfileTab()}
           ${this.renderSettingsTab()}
         </main>
 
@@ -168,60 +157,6 @@ class PopupInterface {
             <div class="empty-state">No recent applications</div>
           </div>
         </div>
-      </div>
-    `;
-  }
-
-  renderProfileTab() {
-    return `
-      <div class="tab-content" data-tab="profile">
-        <form id="profile-form">
-          <div class="form-section">
-            <h3>Personal Information</h3>
-            <div class="form-row">
-              <div class="form-group">
-                <label>First Name</label>
-                <input type="text" id="first-name" required>
-              </div>
-              <div class="form-group">
-                <label>Last Name</label>
-                <input type="text" id="last-name" required>
-              </div>
-            </div>
-            <div class="form-group">
-              <label>Email</label>
-              <input type="email" id="email" required>
-            </div>
-            <div class="form-group">
-              <label>Phone</label>
-              <input type="tel" id="phone">
-            </div>
-            <div class="form-group">
-              <label>Location</label>
-              <input type="text" id="location">
-            </div>
-          </div>
-
-          <div class="form-section">
-            <h3>Professional Details</h3>
-            <div class="form-group">
-              <label>Current Title</label>
-              <input type="text" id="current-title">
-            </div>
-            <div class="form-group">
-              <label>Years of Experience</label>
-              <input type="number" id="experience" min="0" max="50">
-            </div>
-            <div class="form-group">
-              <label>Skills (comma-separated)</label>
-              <textarea id="skills" placeholder="JavaScript, Python, React..."></textarea>
-            </div>
-          </div>
-
-          <button type="button" id="save-profile-btn" class="btn btn-primary">
-            Save Profile
-          </button>
-        </form>
       </div>
     `;
   }
@@ -600,34 +535,6 @@ class PopupInterface {
   }
 
   populateData() {
-    if (this.userProfile) {
-      // Populate profile form using lodash get for safe property access
-      document.getElementById('first-name').value = _.get(
-        this.userProfile,
-        'personal.firstName',
-        ''
-      );
-      document.getElementById('last-name').value = _.get(this.userProfile, 'personal.lastName', '');
-      document.getElementById('email').value = _.get(this.userProfile, 'personal.email', '');
-      document.getElementById('phone').value = _.get(this.userProfile, 'personal.phone', '');
-      document.getElementById('location').value = _.get(this.userProfile, 'personal.location', '');
-      document.getElementById('current-title').value = _.get(
-        this.userProfile,
-        'professional.currentTitle',
-        ''
-      );
-      document.getElementById('experience').value = _.get(
-        this.userProfile,
-        'professional.experience',
-        0
-      );
-      document.getElementById('skills').value = _.get(
-        this.userProfile,
-        'professional.skills',
-        []
-      ).join(', ');
-    }
-
     if (this.settings) {
       // Populate settings form using lodash get for safe property access
       document.getElementById('daily-limit').value = _.get(
@@ -747,48 +654,6 @@ class PopupInterface {
     }
   }
 
-  async saveProfile() {
-    try {
-      const profile = {
-        ...this.userProfile,
-        personal: {
-          firstName: document.getElementById('first-name').value,
-          lastName: document.getElementById('last-name').value,
-          email: document.getElementById('email').value,
-          phone: document.getElementById('phone').value,
-          location: document.getElementById('location').value
-        },
-        professional: {
-          ..._.get(this.userProfile, 'professional', {}),
-          currentTitle: document.getElementById('current-title').value,
-          experience: parseInt(document.getElementById('experience').value, 10) || 0,
-          skills: document
-            .getElementById('skills')
-            .value.split(',')
-            .map(s => s.trim())
-            .filter(Boolean)
-        }
-      };
-
-      const errors = ValidationHelper.validateUserProfile(profile);
-      if (errors.length > 0) {
-        alert(`Please fix the following errors:\n${errors.join('\n')}`);
-        return;
-      }
-
-      const response = await MessageHandler.sendMessage(MESSAGE_TYPES.SAVE_USER_PROFILE, profile);
-      if (response.success) {
-        this.userProfile = profile;
-        alert('Profile saved successfully!');
-      } else {
-        alert('Failed to save profile. Please try again.');
-      }
-    } catch (error) {
-      Logger.error('Save profile failed', error);
-      alert('Failed to save profile. Please try again.');
-    }
-  }
-
   async saveSettings() {
     try {
       const settings = {
@@ -879,35 +744,6 @@ class PopupInterface {
     }
   }
 
-  getDefaultProfile() {
-    return {
-      personal: {
-        firstName: '',
-        lastName: '',
-        email: '',
-        phone: '',
-        location: ''
-      },
-      professional: {
-        currentTitle: '',
-        experience: 0,
-        summary: '',
-        skills: []
-      },
-      preferences: {
-        salary: { min: 0, max: 200000 },
-        locations: [],
-        includeKeywords: [],
-        excludeKeywords: [],
-        jobTypes: [],
-        companies: {
-          whitelist: [],
-          blacklist: []
-        }
-      }
-    };
-  }
-
   getDefaultSettings() {
     return {
       rateLimit: {
@@ -957,10 +793,10 @@ class PopupInterface {
 let popupInitialized = false;
 
 function initializePopup() {
-  console.log('Initializing popup...');
+  Logger.info('Initializing popup...');
 
   if (popupInitialized) {
-    console.log('Popup already initialized, skipping...');
+    Logger.info('Popup already initialized, skipping...');
     return;
   }
 
