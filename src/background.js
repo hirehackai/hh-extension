@@ -2,7 +2,7 @@
 import { StorageManager } from './utils/storage.js';
 import { Logger } from './utils/helpers.js';
 import { MESSAGE_TYPES, APPLICATION_STATUS, DEFAULT_SETTINGS } from './utils/constants.js';
-
+import _get from 'lodash/get';
 class BackgroundService {
   constructor() {
     this.setupMessageHandlers();
@@ -214,22 +214,23 @@ class BackgroundService {
   async checkRateLimit() {
     try {
       const settings = await StorageManager.getSettings();
-      const _session = await StorageManager.getSession();
 
       // Reset daily applications if new day
       await this.resetDailySessionIfNeeded();
       const updatedSession = await StorageManager.getSession();
 
-      const dailyLimitReached = updatedSession.applicationsToday >= settings.rateLimit.dailyLimit;
+      const dailyLimitReached =
+        updatedSession.applicationsToday >= _get(settings, 'rateLimit.dailyLimit');
       const hourlyLimitReached =
-        updatedSession.currentSession.applicationsThisSession >= settings.rateLimit.hourlyLimit;
+        updatedSession.currentSession.applicationsThisSession >=
+        _get(settings, 'rateLimit.hourlyLimit');
 
       return {
         allowed: !dailyLimitReached && !hourlyLimitReached,
         dailyApplications: updatedSession.applicationsToday,
-        dailyLimit: settings.rateLimit.dailyLimit,
+        dailyLimit: _get(settings, 'rateLimit.dailyLimit'),
         sessionApplications: updatedSession.currentSession.applicationsThisSession,
-        hourlyLimit: settings.rateLimit.hourlyLimit
+        hourlyLimit: _get(settings, 'rateLimit.hourlyLimit')
       };
     } catch (error) {
       Logger.error('Rate limit check error', error);

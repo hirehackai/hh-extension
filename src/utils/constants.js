@@ -18,7 +18,16 @@ export const MESSAGE_TYPES = {
   SAVE_USER_PROFILE: 'save_user_profile',
   // Data Operations
   GET_SETTINGS: 'get_settings',
-  GET_STATS: 'get_stats'
+  GET_STATS: 'get_stats',
+
+  START_AUTO_APPLY: 'start_auto_apply',
+  STOP_AUTO_APPLY: 'stop_auto_apply',
+  APPLICATION_COMPLETED: 'application_completed',
+  PAUSE_AUTO_APPLY: 'pause_auto_apply',
+  RESUME_AUTO_APPLY: 'resume_auto_apply',
+  GET_JOB_DATA: 'get_job_data',
+  CHECK_EASY_APPLY: 'check_easy_apply',
+  GET_APPLICATION_HISTORY: 'get_application_history'
 };
 
 export const APPLICATION_STATUS = {
