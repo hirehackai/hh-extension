@@ -2,10 +2,26 @@
 
 ## Document Information
 
-- **Document Version**: 1.0
+- **Document Version**: 2.0
 - **Created Date**: September 7, 2025
+- **Updated Date**: September 19, 2025
 - **Product Name**: HireHack
 - **Document Type**: Technical Architecture Specification
+
+## Recent Changes (v2.0)
+
+- **Popup Removal**: Eliminated separate popup interface in favor of embedded
+  content script UI
+- **Simplified Architecture**: Streamlined to two main components (Background +
+  Content Script)
+- **Code Cleanup**: Removed unused functions, constants, and profile management
+  features
+- **Enhanced Content UI**: Added real-time stats display, progress bars, and
+  embedded controls directly on LinkedIn pages
+- **Storage Simplification**: Removed user profile storage, focused on settings
+  and application history
+- **Manifest Updates**: Updated to simplified Manifest V3 structure without
+  popup action
 
 ---
 
@@ -32,40 +48,40 @@
 ┌─────────────────────────────────────────────────────────────┐
 │                    HireHack Chrome Extension                │
 ├─────────────────────────────────────────────────────────────┤
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐   │
-│  │   Popup     │  │  Content    │  │   Background        │   │
-│  │   Script    │◄─┤   Script    │◄─┤   Service Worker    │   │
-│  │ (UI Layer)  │  │(DOM Control)│  │  (Data Processing)  │   │
-│  └─────────────┘  └─────────────┘  └─────────────────────┘   │
-│         │                 │                    │            │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐   │
-│  │  Settings   │  │  Platform   │  │   Local Storage     │   │
-│  │   Panel     │  │   Pages     │  │   (Chrome APIs)     │   │
-│  └─────────────┘  └─────────────┘  └─────────────────────┘   │
+│  ┌─────────────┐  ┌─────────────────────┐  ┌─────────────┐   │
+│  │  Content    │  │   Background        │  │   Local     │   │
+│  │   Script    │◄─┤   Service Worker    │◄─┤   Storage   │   │
+│  │(UI + DOM)   │  │  (Data Processing)  │  │ (Chrome API)│   │
+│  └─────────────┘  └─────────────────────┘  └─────────────┘   │
+│         │                    │                    │          │
+│  ┌─────────────┐  ┌─────────────────────┐  ┌─────────────┐   │
+│  │  LinkedIn   │  │    Rate Limiting    │  │Application  │   │
+│  │   Pages     │  │   & Job Tracking    │  │  History    │   │
+│  └─────────────┘  └─────────────────────┘  └─────────────┘   │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 ### 1.2 Component Communication Flow
 
 ```
-User Action → Popup UI → Background Script → Content Script → Platform DOM
+User Action → Content UI → Background Script → Data Storage → Stats Update
      ↓              ↓            ↓              ↓
-Settings Page → Local Storage → Data Processing → Form Filling
+LinkedIn Page → Form Detection → Job Processing → Application History
      ↓              ↓            ↓              ↓
-Export Data ← Application History ← Job Tracking ← Success/Failure
+EasyApply → Auto-Fill Forms → Rate Limiting → Success/Failure Tracking
 ```
 
 ### 1.3 Data Flow Architecture
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌──────────────────┐
-│   User Profile  │    │ Job Application │    │  Application     │
-│   JSON Config   │───►│   Processing    │───►│    History       │
+│   Extension     │    │ Job Application │    │  Application     │
+│   Settings      │───►│   Processing    │───►│    History       │
 │                 │    │                 │    │                  │
-│ • Name          │    │ • Form Fill     │    │ • Success Count  │
-│ • Skills        │    │ • Validation    │    │ • Failed Jobs    │
-│ • Experience    │    │ • Rate Limiting │    │ • Applied Jobs   │
-│ • Preferences   │    │ • Error Handling│    │ • Export Data    │
+│ • Rate Limits   │    │ • Form Fill     │    │ • Success Count  │
+│ • Behavior      │    │ • LinkedIn API  │    │ • Failed Jobs    │
+│ • Preferences   │    │ • Rate Limiting │    │ • Daily Stats    │
+│ • Daily Limits  │    │ • Error Handling│    │ • Progress Data  │
 └─────────────────┘    └─────────────────┘    └──────────────────┘
 ```
 
@@ -86,27 +102,17 @@ Export Data ← Application History ← Job Tracking ← Success/Failure
 - Platform detection and routing
 ```
 
-#### 2.1.2 Content Scripts
+#### 2.1.2 Content Script with Embedded UI
 
 ```javascript
-// Platform-specific responsibilities:
+// Primary responsibilities:
 - DOM manipulation and form filling
 - Job listing detection and parsing
 - Application submission handling
-- Visual feedback and overlays
+- Embedded UI overlay for controls
+- Real-time stats display
+- User interaction handling
 - Platform adapter implementation
-```
-
-#### 2.1.3 Popup Interface
-
-```javascript
-// UI responsibilities:
-- Real-time status display
-- Control panel (start/stop/pause)
-- Application statistics
-- Quick settings access
-- Draggable functionality
-- Profile management interface
 ```
 
 ### 2.2 Component Dependencies
@@ -116,22 +122,16 @@ Background Service Worker (Core)
 ├── Storage Manager
 ├── Rate Limiter
 ├── Job Tracker
-└── Platform Router
+└── Settings Manager
 
-Content Scripts (Platform-specific)
-├── Platform Adapter (Abstract)
+Content Script with UI (LinkedIn Integration)
+├── LinkedIn Automation Engine
+├── Embedded UI Controller
 ├── Form Filler
 ├── DOM Monitor
-└── Visual Overlay
-
-Popup Interface
-├── Draggable Handler
-├── State Manager
-├── Control Panel
-├── Statistics Display
-├── Profile Manager
-├── Settings Controller
-└── Data Exporter
+├── Stats Display Manager
+├── Progress Bar Controller
+└── Draggable Interface Handler
 ```
 
 ---
@@ -213,53 +213,35 @@ const StorageSchema = {
 
 ### 3.2 Data Models
 
-#### User Profile Model
+#### Extension Settings Model
 
 ```javascript
-interface UserProfile {
-  personal: PersonalInfo;
-  professional: ProfessionalInfo;
-  preferences: JobPreferences;
+interface ExtensionSettings {
+  rateLimit: RateLimitConfig;
+  application: ApplicationBehavior;
+  preferences: UserPreferences;
   metadata: {
-    createdAt: Date,
     updatedAt: Date,
     version: string
   };
 }
 
-interface PersonalInfo {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  location: string;
+interface RateLimitConfig {
+  dailyLimit: number;
+  hourlyLimit: number;
+  delayBetween: number;
 }
 
-interface ProfessionalInfo {
-  currentTitle: string;
-  experience: number;
-  skills: string[];
-  summary: string;
-  resumeFiles: ResumeFiles;
+interface ApplicationBehavior {
+  skipCoverLetter: boolean;
+  skipQuestions: boolean;
+  autoAnswerBasic: boolean;
+  randomizeTiming: boolean;
 }
 
-interface ResumeFiles {
-  default?: string;
-  technical?: string;
-  management?: string;
-  [key: string]: string | undefined;
-}
-
-interface JobPreferences {
-  salaryRange: { min: number, max: number };
-  locations: string[];
-  jobTypes: string[];
+interface UserPreferences {
+  salary: { min: number, max: number };
   excludeKeywords: string[];
-  includeKeywords: string[];
-  companies: {
-    whitelist: string[],
-    blacklist: string[]
-  };
 }
 ```
 
@@ -320,75 +302,22 @@ interface ExtensionState {
 
 ```
 hirehack-extension/
-├── manifest.json                 # Extension configuration
+├── manifest.json                 # Extension configuration (Manifest V3)
 ├── src/
-│   ├── background/
-│   │   ├── service-worker.js     # Main background script
-│   │   ├── storage-manager.js    # Storage operations
-│   │   ├── rate-limiter.js       # Rate limiting logic
-│   │   ├── job-tracker.js        # Application tracking
-│   │   └── platform-router.js    # Platform detection & routing
-│   ├── content/
-│   │   ├── linkedin/
-│   │   │   ├── linkedin-adapter.js
-│   │   │   ├── linkedin-selectors.js
-│   │   │   └── linkedin-forms.js
-│   │   ├── indeed/               # Future platform
-│   │   │   ├── indeed-adapter.js
-│   │   │   └── indeed-selectors.js
-│   │   ├── shared/
-│   │   │   ├── platform-adapter.js    # Abstract base class
-│   │   │   ├── form-filler.js         # Generic form filling
-│   │   │   ├── dom-utils.js           # DOM utilities
-│   │   │   └── visual-overlay.js      # UI overlays
-│   │   └── content-main.js        # Content script entry point
-│   ├── popup/
-│   │   ├── popup.html
-│   │   ├── popup.js               # Main popup logic
-│   │   ├── popup.css
-│   │   ├── components/
-│   │   │   ├── draggable.js       # Draggable functionality
-│   │   │   ├── controls.js        # Control buttons
-│   │   │   ├── stats.js           # Statistics display
-│   │   │   ├── profile-form.js    # User profile form
-│   │   │   ├── resume-manager.js  # Resume upload/management
-│   │   │   ├── preferences.js     # Job preferences
-│   │   │   ├── data-export.js     # Data export functionality
-│   │   │   └── notifications.js   # User notifications
-│   │   ├── state-manager.js       # Popup state management
-│   │   └── validators.js          # Form validation
-│   ├── config/
-│   │   ├── user-profile-template.json
-│   │   ├── platform-configs.json # Platform-specific configurations
-│   │   └── default-settings.json
+│   ├── background.js             # Background service worker
+│   ├── content-script.js         # Main content script with embedded UI
 │   └── utils/
-│       ├── constants.js           # Application constants
-│       ├── helpers.js             # Utility functions
-│       ├── logger.js              # Logging utility
-│       ├── crypto.js              # Data encryption
-│       └── validators.js          # Data validation
-├── assets/
-│   ├── icons/
-│   │   ├── icon16.png
-│   │   ├── icon48.png
-│   │   ├── icon128.png
-│   │   └── disabled/              # Disabled state icons
-│   ├── styles/
-│   │   ├── common.css             # Shared styles
-│   │   ├── popup.css              # Popup-specific styles
-│   │   └── content.css            # Content script styles
-│   └── images/
-│       ├── logos/                 # Platform logos
-│       └── ui/                    # UI elements
-├── tests/
-│   ├── unit/
-│   ├── integration/
-│   └── e2e/
-└── docs/
-    ├── setup.md
-    ├── platform-integration.md
-    ├── api-reference.md
-    └── troubleshooting.md
+│       ├── constants.js          # Application constants and selectors
+│       ├── helpers.js            # Utility functions and classes
+│       └── storage.js            # Storage management utilities
+├── icons/                        # Extension icons
+│   └── icon.png                  # Single icon file (16/48/128px)
+├── webpack.config.js             # Build configuration
+├── package.json                  # Dependencies and scripts
+└── docs/                         # Documentation
+    ├── README.md
+    ├── TECHNICAL_ARCHITECTURE.md
+    └── PRD.md
 ```
 
 ### 4.2 Manifest V3 Configuration
@@ -400,39 +329,22 @@ hirehack-extension/
   "version": "1.0.0",
   "description": "Automate LinkedIn EasyApply job applications with smart filtering and tracking",
   "permissions": ["storage", "activeTab", "scripting"],
-  "host_permissions": ["https://*.linkedin.com/*", "https://*.indeed.com/*"],
+  "host_permissions": ["https://*.linkedin.com/*"],
   "background": {
-    "service_worker": "src/background/service-worker.js",
-    "type": "module"
+    "service_worker": "background.js"
   },
   "content_scripts": [
     {
       "matches": ["https://*.linkedin.com/*"],
-      "js": ["src/content/content-main.js"],
-      "css": ["assets/styles/content.css"],
+      "js": ["content-script.js"],
       "run_at": "document_end"
     }
   ],
-  "action": {
-    "default_popup": "src/popup/popup.html",
-    "default_title": "HireHack Auto-Apply",
-    "default_icon": {
-      "16": "assets/icons/icon16.png",
-      "48": "assets/icons/icon48.png",
-      "128": "assets/icons/icon128.png"
-    }
-  },
   "icons": {
-    "16": "assets/icons/icon16.png",
-    "48": "assets/icons/icon48.png",
-    "128": "assets/icons/icon128.png"
-  },
-  "web_accessible_resources": [
-    {
-      "resources": ["assets/styles/content.css"],
-      "matches": ["https://*.linkedin.com/*"]
-    }
-  ]
+    "16": "icons/icon.png",
+    "48": "icons/icon.png",
+    "128": "icons/icon.png"
+  }
 }
 ```
 
@@ -445,13 +357,14 @@ hirehack-extension/
 #### Background ↔ Content Script Communication
 
 ```javascript
-// Message Types
+// Message Types (Simplified)
 const MessageTypes = {
   // Application Control
   START_APPLICATION: 'start_application',
   STOP_APPLICATION: 'stop_application',
   PAUSE_APPLICATION: 'pause_application',
   RESUME_APPLICATION: 'resume_application',
+  CHECK_RATE_LIMIT: 'check_rate_limit',
 
   // Job Processing
   JOB_APPLIED: 'job_applied',
@@ -459,52 +372,19 @@ const MessageTypes = {
   JOB_SKIPPED: 'job_skipped',
   JOBS_DETECTED: 'jobs_detected',
 
-  // Status Updates
-  UPDATE_STATUS: 'update_status',
-  UPDATE_PROGRESS: 'update_progress',
-
   // Data Operations
-  GET_USER_PROFILE: 'get_user_profile',
-  SAVE_APPLICATION_DATA: 'save_application_data',
   GET_SETTINGS: 'get_settings',
-
-  // Platform Events
-  PLATFORM_DETECTED: 'platform_detected',
-  PLATFORM_CHANGED: 'platform_changed'
+  GET_STATS: 'get_stats'
 };
 
 // Message Structure
 interface ExtensionMessage {
   type: string;
   payload: any;
-  sender: 'popup' | 'content' | 'background';
+  sender: 'content' | 'background';
   timestamp: number;
   requestId?: string;
 }
-```
-
-#### Popup ↔ Background Communication
-
-```javascript
-const PopupMessages = {
-  // State Management
-  GET_STATUS: 'get_status',
-  GET_STATS: 'get_stats',
-  GET_CURRENT_SESSION: 'get_current_session',
-
-  // Control Actions
-  TOGGLE_AUTO_APPLY: 'toggle_auto_apply',
-  PAUSE_RESUME: 'pause_resume',
-  STOP_APPLICATION: 'stop_application',
-
-  // Settings
-  UPDATE_SETTINGS: 'update_settings',
-  GET_SETTINGS: 'get_settings',
-
-  // Data Export
-  EXPORT_DATA: 'export_data',
-  IMPORT_DATA: 'import_data'
-};
 ```
 
 ### 5.2 API Methods
@@ -514,9 +394,19 @@ const PopupMessages = {
 ```javascript
 class BackgroundAPI {
   // Storage Operations
-  async getUserProfile(): Promise<UserProfile>
-  async saveUserProfile(profile: UserProfile): Promise<void>
+  async getSettings(): Promise<ExtensionSettings>
+  async saveSettings(settings: ExtensionSettings): Promise<void>
   async getApplicationHistory(): Promise<ApplicationRecord[]>
+  async addApplicationRecord(record: ApplicationRecord): Promise<void>
+
+  // Statistics
+  async getStats(): Promise<ExtensionStats>
+  async updateStats(update: Partial<ExtensionStats>): Promise<void>
+
+  // Rate Limiting
+  async checkRateLimit(): Promise<boolean>
+  async recordApplication(): Promise<void>
+}
   async addApplicationRecord(record: ApplicationRecord): Promise<void>
 
   // State Management
@@ -564,37 +454,35 @@ abstract class PlatformAdapter {
 
 ## 6. User Interface Architecture
 
-### 6.1 Popup Interface Architecture
+### 6.1 Embedded Content Script UI
 
 #### Component Structure
 
 ```javascript
-// Popup Component Hierarchy
-PopupApp
+// Content Script UI Hierarchy (Embedded on LinkedIn)
+LinkedInAutomationUI
 ├── Header
-│   ├── Logo
-│   ├── StatusIndicator
-│   └── WindowControls (minimize, close)
-├── MainPanel
-│   ├── StatsDisplay
-│   │   ├── ApplicationCounter
-│   │   ├── SuccessRate
-│   │   └── TotalApplied
-│   ├── ControlPanel
-│   │   ├── StartButton
-│   │   ├── PauseButton
-│   │   └── StopButton
-│   └── CurrentJobDisplay
-│       ├── JobTitle
-│       ├── Company
-│       └── EstimatedTime
-└── Footer
-    ├── SettingsButton
-    ├── HistoryButton
-    └── ExportButton
+│   ├── Logo & Title
+│   ├── StatusIndicator (Ready/Active/Paused)
+│   └── CloseButton
+├── ControlPanel
+│   ├── StartButton
+│   ├── PauseButton
+│   └── StopButton
+├── ProgressSection
+│   ├── DailyProgressBar
+│   └── ProgressText (X / Y applications today)
+├── StatsDisplay
+│   ├── TotalApplications
+│   ├── ApplicationsToday
+│   ├── ThisSession
+│   └── SuccessRate
+└── CurrentJobDisplay (when active)
+    ├── JobTitle
+    └── Company
 ```
 
-#### Draggable Popup Implementation
+#### Draggable UI Implementation
 
 ```javascript
 class DraggablePopup {
