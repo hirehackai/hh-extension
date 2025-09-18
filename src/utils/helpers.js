@@ -226,40 +226,6 @@ export class URLHelper {
   }
 }
 
-export class ValidationHelper {
-  static isValidEmail(email) {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  }
-
-  static isValidPhone(phone) {
-    const phoneRegex = /^\+?[\d\s\-()]{10,}$/;
-    return phoneRegex.test(phone);
-  }
-
-  static validateUserProfile(profile) {
-    const errors = [];
-
-    if (!profile.personal.firstName?.trim()) {
-      errors.push('First name is required');
-    }
-
-    if (!profile.personal.lastName?.trim()) {
-      errors.push('Last name is required');
-    }
-
-    if (!profile.personal.email || !this.isValidEmail(profile.personal.email)) {
-      errors.push('Valid email is required');
-    }
-
-    if (profile.personal.phone && !this.isValidPhone(profile.personal.phone)) {
-      errors.push('Valid phone number format required');
-    }
-
-    return errors;
-  }
-}
-
 export class Logger {
   static debug(message, data = {}) {
     console.debug(`[HireHack] ${message}`, data);
@@ -285,6 +251,5 @@ export default {
   RateLimiter,
   MessageHandler,
   URLHelper,
-  ValidationHelper,
   Logger
 };
