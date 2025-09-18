@@ -99,16 +99,6 @@ class BackgroundService {
           sendResponse({ success: true, data: { canApply } });
           break;
 
-        case MESSAGE_TYPES.EXPORT_DATA:
-          const exportData = await StorageManager.exportData();
-          sendResponse({ success: true, data: exportData });
-          break;
-
-        case MESSAGE_TYPES.IMPORT_DATA:
-          const importResult = await StorageManager.importData(data);
-          sendResponse({ success: importResult });
-          break;
-
         default:
           Logger.warn('Unknown message type:', type);
           sendResponse({ success: false, error: 'Unknown message type' });
@@ -224,7 +214,7 @@ class BackgroundService {
   async checkRateLimit() {
     try {
       const settings = await StorageManager.getSettings();
-      const session = await StorageManager.getSession();
+      const _session = await StorageManager.getSession();
 
       // Reset daily applications if new day
       await this.resetDailySessionIfNeeded();

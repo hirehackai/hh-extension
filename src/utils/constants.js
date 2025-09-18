@@ -35,8 +35,7 @@ export const POPUP_MESSAGES = {
   TOGGLE_AUTO_APPLY: 'toggle_auto_apply',
   PAUSE_RESUME: 'pause_resume',
   STOP_APPLICATION: 'stop_application',
-  UPDATE_SETTINGS: 'update_settings',
-  EXPORT_DATA: 'export_data'
+  UPDATE_SETTINGS: 'update_settings'
 };
 
 export const APPLICATION_STATUS = {

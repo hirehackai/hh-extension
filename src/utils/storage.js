@@ -86,30 +86,6 @@ export class StorageManager {
     return await this.set(STORAGE_KEYS.SESSION, updatedSession);
   }
 
-  static async exportData() {
-    const data = {
-      userProfile: await this.getUserProfile(),
-      applicationHistory: await this.getApplicationHistory(),
-      settings: await this.getSettings(),
-      stats: await this.getStats(),
-      exportedAt: new Date().toISOString()
-    };
-    return data;
-  }
-
-  static async importData(data) {
-    try {
-      if (data.userProfile) { await this.saveUserProfile(data.userProfile); }
-      if (data.applicationHistory) { await this.set(STORAGE_KEYS.APPLICATION_HISTORY, data.applicationHistory); }
-      if (data.settings) { await this.saveSettings(data.settings); }
-      if (data.stats) { await this.set(STORAGE_KEYS.STATS, data.stats); }
-      return true;
-    } catch (error) {
-      console.error('Import data error:', error);
-      return false;
-    }
-  }
-
   static getDefaultUserProfile() {
     return {
       personal: {

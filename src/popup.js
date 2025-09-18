@@ -67,17 +67,6 @@ class PopupInterface {
     });
 
     // Data management
-    document.getElementById('export-data-btn')?.addEventListener('click', () => {
-      this.exportData();
-    });
-
-    document.getElementById('import-data-btn')?.addEventListener('click', () => {
-      document.getElementById('import-file').click();
-    });
-
-    document.getElementById('import-file')?.addEventListener('change', e => {
-      this.importData(e.target.files[0]);
-    });
   }
 
   renderInterface() {
@@ -221,19 +210,6 @@ class PopupInterface {
             Save Settings
           </button>
         </form>
-
-        <div class="form-section">
-          <h3>Data Management</h3>
-          <div class="data-actions">
-            <button id="export-data-btn" class="btn btn-secondary">
-              Export Data
-            </button>
-            <button id="import-data-btn" class="btn btn-secondary">
-              Import Data
-            </button>
-            <input type="file" id="import-file" accept=".json" style="display: none;">
-          </div>
-        </div>
       </div>
     `;
   }
@@ -501,11 +477,6 @@ class PopupInterface {
         margin-right: 8px;
       }
 
-      .data-actions {
-        display: flex;
-        gap: 8px;
-      }
-
       .popup-footer {
         padding: 12px 16px;
         border-top: 1px solid #ddd;
@@ -694,53 +665,6 @@ class PopupInterface {
     } catch (error) {
       Logger.error('Save settings failed', error);
       alert('Failed to save settings. Please try again.');
-    }
-  }
-
-  async exportData() {
-    try {
-      const response = await MessageHandler.sendMessage(MESSAGE_TYPES.EXPORT_DATA);
-      if (response.success) {
-        const data = JSON.stringify(response.data, null, 2);
-        const blob = new Blob([data], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `hirehack-data-${new Date().toISOString().split('T')[0]}.json`;
-        a.click();
-
-        URL.revokeObjectURL(url);
-      } else {
-        alert('Failed to export data. Please try again.');
-      }
-    } catch (error) {
-      Logger.error('Export data failed', error);
-      alert('Failed to export data. Please try again.');
-    }
-  }
-
-  async importData(file) {
-    if (!file) {
-      return;
-    }
-
-    try {
-      const text = await file.text();
-      const data = JSON.parse(text);
-
-      const response = await MessageHandler.sendMessage(MESSAGE_TYPES.IMPORT_DATA, data);
-      if (response.success) {
-        alert('Data imported successfully!');
-        await this.loadData();
-        this.populateData();
-        this.updateStats();
-      } else {
-        alert('Failed to import data. Please check the file format.');
-      }
-    } catch (error) {
-      Logger.error('Import data failed', error);
-      alert('Failed to import data. Please check the file format.');
     }
   }
 
