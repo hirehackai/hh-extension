@@ -13,29 +13,11 @@ export const MESSAGE_TYPES = {
   JOB_SKIPPED: 'job_skipped',
   JOBS_DETECTED: 'jobs_detected',
 
-  // Status Updates
-  UPDATE_STATUS: 'update_status',
-  UPDATE_PROGRESS: 'update_progress',
-
   // Data Operations
   GET_USER_PROFILE: 'get_user_profile',
-  SAVE_APPLICATION_DATA: 'save_application_data',
+  // Data Operations
   GET_SETTINGS: 'get_settings',
-  GET_STATS: 'get_stats',
-
-  // Platform Events
-  PLATFORM_DETECTED: 'platform_detected',
-  PLATFORM_CHANGED: 'platform_changed'
-};
-
-export const POPUP_MESSAGES = {
-  GET_STATUS: 'get_status',
-  GET_STATS: 'get_stats',
-  GET_CURRENT_SESSION: 'get_current_session',
-  TOGGLE_AUTO_APPLY: 'toggle_auto_apply',
-  PAUSE_RESUME: 'pause_resume',
-  STOP_APPLICATION: 'stop_application',
-  UPDATE_SETTINGS: 'update_settings'
+  GET_STATS: 'get_stats'
 };
 
 export const APPLICATION_STATUS = {
@@ -43,21 +25,6 @@ export const APPLICATION_STATUS = {
   FAILED: 'failed',
   SKIPPED: 'skipped',
   PENDING: 'pending'
-};
-
-export const EXTENSION_STATES = {
-  INACTIVE: 'inactive',
-  STARTING: 'starting',
-  ACTIVE: 'active',
-  PAUSED: 'paused',
-  STOPPING: 'stopping',
-  ERROR: 'error'
-};
-
-export const PLATFORM_TYPES = {
-  LINKEDIN: 'linkedin',
-  INDEED: 'indeed',
-  GLASSDOOR: 'glassdoor'
 };
 
 export const STORAGE_KEYS = {
