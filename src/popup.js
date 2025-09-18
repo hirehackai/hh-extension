@@ -87,12 +87,6 @@ class PopupInterface {
     document.getElementById('import-file')?.addEventListener('change', e => {
       this.importData(e.target.files[0]);
     });
-
-    // Open full options
-    document.getElementById('open-options-btn')?.addEventListener('click', () => {
-      chrome.tabs.create({ url: chrome.runtime.getURL('options.html') });
-      window.close();
-    });
   }
 
   renderInterface() {
@@ -118,9 +112,7 @@ class PopupInterface {
           ${this.renderSettingsTab()}
         </main>
 
-        <footer class="popup-footer">
-          <button id="open-options-btn" class="btn btn-link">Full Options</button>
-        </footer>
+
       </div>
     `;
 

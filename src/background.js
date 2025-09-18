@@ -299,9 +299,6 @@ class BackgroundService {
 
       // Initialize default data
       await StorageManager.saveSettings(DEFAULT_SETTINGS);
-
-      // Open options page
-      chrome.tabs.create({ url: chrome.runtime.getURL('options.html') });
     } else if (details.reason === 'update') {
       Logger.info('Extension updated');
       // Handle any migration logic here if needed

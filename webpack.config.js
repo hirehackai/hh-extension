@@ -10,8 +10,7 @@ module.exports = (env, argv) => {
     entry: {
       background: './src/background.js',
       'content-script': './src/content-script.js',
-      popup: './src/popup.js',
-      options: './src/options.js'
+      popup: './src/popup.js'
     },
     output: {
       path: path.resolve(__dirname, 'dist'),
@@ -50,11 +49,6 @@ module.exports = (env, argv) => {
         template: './src/popup.html',
         filename: 'popup.html',
         chunks: ['popup']
-      }),
-      new HtmlWebpackPlugin({
-        template: './src/options.html',
-        filename: 'options.html',
-        chunks: ['options']
       }),
       new CopyPlugin({
         patterns: [
