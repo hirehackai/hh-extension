@@ -5,7 +5,6 @@ import { MESSAGE_TYPES, APPLICATION_STATUS, DEFAULT_SETTINGS } from './utils/con
 
 class BackgroundService {
   constructor() {
-    this.isInitialized = false;
     this.setupMessageHandlers();
     this.init();
   }
@@ -23,7 +22,6 @@ class BackgroundService {
       // Reset daily session if needed
       await this.resetDailySessionIfNeeded();
 
-      this.isInitialized = true;
       Logger.info('Background service initialized successfully');
     } catch (error) {
       Logger.error('Background service initialization failed', error);
