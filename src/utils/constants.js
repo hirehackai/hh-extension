@@ -15,6 +15,7 @@ export const MESSAGE_TYPES = {
 
   // Data Operations
   GET_USER_PROFILE: 'get_user_profile',
+  SAVE_USER_PROFILE: 'save_user_profile',
   // Data Operations
   GET_SETTINGS: 'get_settings',
   GET_STATS: 'get_stats'
