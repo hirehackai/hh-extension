@@ -139,13 +139,6 @@ class PopupInterface {
             <span id="daily-count">0</span> / <span id="daily-limit">30</span> applications today
           </div>
         </div>
-
-        <div class="recent-activity">
-          <h3>Recent Activity</h3>
-          <div id="recent-applications">
-            <div class="empty-state">No recent applications</div>
-          </div>
-        </div>
       </div>
     `;
   }
@@ -402,25 +395,6 @@ class PopupInterface {
         text-align: center;
         font-size: 12px;
         color: #666;
-      }
-
-      .recent-activity {
-        background: white;
-        padding: 16px;
-        border-radius: 8px;
-        border: 1px solid #ddd;
-      }
-
-      .recent-activity h3 {
-        margin-bottom: 12px;
-        font-size: 14px;
-      }
-
-      .empty-state {
-        text-align: center;
-        color: #666;
-        font-style: italic;
-        padding: 20px;
       }
 
       .form-section {
@@ -707,8 +681,7 @@ class PopupInterface {
       successfulApplications: 0,
       failedApplications: 0,
       streakDays: 0,
-      lastApplicationDate: null,
-      recentApplications: []
+      lastApplicationDate: null
     };
   }
 }
