@@ -33,6 +33,7 @@ class LinkedInAutomation {
       await this.setupUI();
       this.setupMessageHandlers();
       this.observePageChanges();
+      await this.loadAndUpdateStats();
 
       Logger.info('LinkedIn automation initialized');
     } catch (error) {
@@ -121,14 +122,31 @@ class LinkedInAutomation {
             Stop
           </button>
         </div>
+        <div class="hh-progress-section">
+          <div class="hh-progress-header">
+            <span class="hh-progress-label">Daily Progress</span>
+            <span class="hh-progress-text"><span id="hh-daily-count">0</span> / <span id="hh-daily-limit">30</span></span>
+          </div>
+          <div class="hh-progress-bar">
+            <div class="hh-progress-fill" id="hh-progress-fill"></div>
+          </div>
+        </div>
         <div class="hh-stats">
           <div class="hh-stat">
+            <span class="hh-stat-label">Total Applied:</span>
+            <span id="hh-total-applications" class="hh-stat-value">0</span>
+          </div>
+          <div class="hh-stat">
             <span class="hh-stat-label">Applied Today:</span>
-            <span id="hh-applied-today">0</span>
+            <span id="hh-applied-today" class="hh-stat-value">0</span>
           </div>
           <div class="hh-stat">
             <span class="hh-stat-label">This Session:</span>
-            <span id="hh-session-count">0</span>
+            <span id="hh-session-count" class="hh-stat-value">0</span>
+          </div>
+          <div class="hh-stat">
+            <span class="hh-stat-label">Success Rate:</span>
+            <span id="hh-success-rate" class="hh-stat-value">0%</span>
           </div>
         </div>
         <div class="hh-current-job" id="hh-current-job" style="display: none;">
@@ -258,6 +276,46 @@ class LinkedInAutomation {
         cursor: not-allowed;
       }
       
+      .hh-progress-section {
+        border-top: 1px solid #eee;
+        padding-top: 12px;
+        margin-bottom: 12px;
+      }
+      
+      .hh-progress-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+      }
+      
+      .hh-progress-label {
+        color: #666;
+        font-size: 12px;
+        font-weight: 500;
+      }
+      
+      .hh-progress-text {
+        color: #333;
+        font-size: 12px;
+        font-weight: 600;
+      }
+      
+      .hh-progress-bar {
+        width: 100%;
+        height: 8px;
+        background: #e9ecef;
+        border-radius: 4px;
+        overflow: hidden;
+        margin-bottom: 12px;
+      }
+      
+      .hh-progress-fill {
+        height: 100%;
+        background: #0077b5;
+        transition: width 0.3s ease;
+        width: 0%;
+      }
+      
       .hh-stats {
         border-top: 1px solid #eee;
         padding-top: 12px;
@@ -273,6 +331,12 @@ class LinkedInAutomation {
       .hh-stat-label {
         color: #666;
         font-size: 12px;
+      }
+      
+      .hh-stat-value {
+        color: #333;
+        font-size: 12px;
+        font-weight: 600;
       }
       
       .hh-current-job {
@@ -546,6 +610,16 @@ class LinkedInAutomation {
       status: APPLICATION_STATUS.SUCCESS
     });
 
+    // Update session count
+    const sessionCountElement = this.ui.querySelector('#hh-session-count');
+    if (sessionCountElement) {
+      const currentCount = parseInt(sessionCountElement.textContent, 10) || 0;
+      sessionCountElement.textContent = currentCount + 1;
+    }
+
+    // Refresh stats from background
+    await this.loadAndUpdateStats();
+
     this.updateSessionStats();
 
     // Close application modal
@@ -634,6 +708,90 @@ class LinkedInAutomation {
     text.textContent = message;
   }
 
+  async loadAndUpdateStats() {
+    try {
+      // Load stats from background script
+      const [statsResponse, settingsResponse] = await Promise.all([
+        MessageHandler.sendMessage(MESSAGE_TYPES.GET_STATS),
+        MessageHandler.sendMessage(MESSAGE_TYPES.GET_SETTINGS)
+      ]);
+
+      if (statsResponse?.success && statsResponse.data) {
+        const stats = statsResponse.data;
+        this.updateStatsDisplay(stats);
+      }
+
+      if (settingsResponse?.success && settingsResponse.data) {
+        const settings = settingsResponse.data;
+        this.updateDailyLimitDisplay(settings);
+      }
+    } catch (error) {
+      Logger.error('Failed to load stats', error);
+    }
+  }
+
+  updateStatsDisplay(stats) {
+    if (!this.ui) {
+      return;
+    }
+
+    // Update total applications
+    const totalElement = this.ui.querySelector('#hh-total-applications');
+    if (totalElement) {
+      totalElement.textContent = stats.totalApplications || 0;
+    }
+
+    // Update applied today
+    const todayElement = this.ui.querySelector('#hh-applied-today');
+    if (todayElement) {
+      todayElement.textContent = stats.applicationsToday || 0;
+    }
+
+    // Update success rate
+    const successRateElement = this.ui.querySelector('#hh-success-rate');
+    if (successRateElement) {
+      const total = stats.totalApplications || 0;
+      const successful = stats.successfulApplications || 0;
+      const rate = total > 0 ? Math.round((successful / total) * 100) : 0;
+      successRateElement.textContent = `${rate}%`;
+    }
+
+    // Update daily progress bar
+    this.updateProgressBar(stats.applicationsToday || 0);
+  }
+
+  updateDailyLimitDisplay(settings) {
+    if (!this.ui) {
+      return;
+    }
+
+    const dailyLimit = settings.rateLimit?.dailyLimit || 30;
+    const dailyLimitElement = this.ui.querySelector('#hh-daily-limit');
+    if (dailyLimitElement) {
+      dailyLimitElement.textContent = dailyLimit;
+    }
+  }
+
+  updateProgressBar(applicationsToday) {
+    if (!this.ui) {
+      return;
+    }
+
+    const dailyCountElement = this.ui.querySelector('#hh-daily-count');
+    const progressFillElement = this.ui.querySelector('#hh-progress-fill');
+    const dailyLimitElement = this.ui.querySelector('#hh-daily-limit');
+
+    if (dailyCountElement) {
+      dailyCountElement.textContent = applicationsToday;
+    }
+
+    if (progressFillElement && dailyLimitElement) {
+      const dailyLimit = parseInt(dailyLimitElement.textContent, 10) || 30;
+      const progress = Math.min((applicationsToday / dailyLimit) * 100, 100);
+      progressFillElement.style.width = `${progress}%`;
+    }
+  }
+
   displayCurrentJob(jobData) {
     const currentJobDiv = this.ui.querySelector('#hh-current-job');
     const titleEl = this.ui.querySelector('#hh-job-title');
@@ -657,7 +815,7 @@ class LinkedInAutomation {
   }
 
   observePageChanges() {
-    this.observer = new MutationObserver(mutations => {
+    this.observer = new MutationObserver(_mutations => {
       // Handle page navigation and dynamic content changes
       if (this.isActive && !this.isPaused) {
         const hasJobContent = document.querySelector(LINKEDIN_SELECTORS.jobTitle);

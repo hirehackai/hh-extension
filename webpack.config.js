@@ -1,7 +1,6 @@
 const path = require('path');
 const CopyPlugin = require('copy-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = (env, argv) => {
   const isProduction = argv.mode === 'production';
@@ -9,8 +8,7 @@ module.exports = (env, argv) => {
   return {
     entry: {
       background: './src/background.js',
-      'content-script': './src/content-script.js',
-      popup: './src/popup.js'
+      'content-script': './src/content-script.js'
     },
     output: {
       path: path.resolve(__dirname, 'dist'),
@@ -44,11 +42,6 @@ module.exports = (env, argv) => {
     plugins: [
       new MiniCssExtractPlugin({
         filename: '[name].css'
-      }),
-      new HtmlWebpackPlugin({
-        template: './src/popup.html',
-        filename: 'popup.html',
-        chunks: ['popup']
       }),
       new CopyPlugin({
         patterns: [
