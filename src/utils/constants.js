@@ -46,15 +46,19 @@ export const STORAGE_KEYS = {
 };
 
 export const DEFAULT_SETTINGS = {
-  dailyLimit: 3,
-  enabledPlatforms: ['linkedin'],
-  autoStart: false
+  dailyLimit: 30,
+  enabledPlatforms: ['linkedin', 'indeed', 'naukri'],
+  autoStart: false,
+  batchSize: 10,
+  delayBetweenApplications: 3000,
+  skipAppliedJobs: true,
+  skipNonEasyApply: true
 };
 
 export const LINKEDIN_SELECTORS = {
+  // Job Detail Page Selectors
   jobListings: '.job-search-card',
-  // easyApplyButton: '#jobs-apply-button-id',
-  easyApplyButton: '[data-view-name="job-apply-button"]',
+  easyApplyButton: '.jobs-apply-button',
   jobTitle: '.job-details-jobs-unified-top-card__job-title',
   companyName: '.job-details-jobs-unified-top-card__company-name',
   jobLocation: '.job-details-jobs-unified-top-card__tertiary-description-container > span > span',
@@ -65,5 +69,110 @@ export const LINKEDIN_SELECTORS = {
   submitButton: '.artdeco-button--primary[aria-label*="Submit"]',
   formFields: 'input, textarea, select',
   jobDescription: '#job-details > div',
-  appliedIndicator: '.jobs-unified-top-card__job-status'
+  appliedIndicator: '.jobs-unified-top-card__job-status',
+
+  // Search Results Page Selectors
+  searchResultsList: '.jobs-search-results__list, .scaffold-layout__list-item',
+  searchResultsContainer: '.jobs-search-results-list',
+  jobCard: '.job-card-container, .jobs-search-results__list-item',
+  jobCardTitle: '.job-card-list__title--link, .job-card-container__link',
+  jobCardCompany: '.job-card-container__primary-description, .artdeco-entity-lockup__subtitle',
+  jobCardLocation: '.job-card-container__metadata-item, .job-card-container__metadata-wrapper li',
+  jobCardEasyApply: '.job-card-container__footer-item',
+  jobCardApplied: '.job-card-container__footer-item',
+  jobCardPromoted: '.job-card-container__footer-item',
+
+  // Navigation & Pagination
+  nextPageButton: '.artdeco-pagination__button--next',
+  loadMoreButton: '[data-infinite-scroller-init]',
+
+  // Application Modal Selectors
+  modalCloseButton: '[data-test-modal-close-btn], [aria-label*="Dismiss"]',
+  modalNextButton: '[data-easy-apply-next-button]',
+  modalReviewButton: 'button[aria-label="Review your application"]',
+  modalSubmitButton: '[data-live-test-easy-apply-submit-button]',
+  modalSuccess: '[aria-labelledby="post-apply-modal"]'
+};
+
+export const INDEED_SELECTORS = {
+  // Search Results Page
+  searchResultsList: '[data-jk]',
+  jobCard: '[data-jk]',
+  jobCardTitle: 'h2 a[data-jk], .jobTitle a',
+  jobCardCompany: '.companyName',
+  jobCardLocation: '.companyLocation',
+  jobCardEasyApply: '.indeedApplyButton, .ia-IndeedApplyButton',
+  jobCardApplied: '.appliedToJob, .ia-applied',
+
+  // Job Detail Page
+  jobTitle: '.jobsearch-JobInfoHeader-title',
+  companyName: '.jobsearch-InlineCompanyRating-companyName',
+  jobLocation: '.jobsearch-JobInfoHeader-subtitle div',
+  applyButton: '.indeedApplyButton, .ia-IndeedApplyButton',
+  jobDescription: '#jobDescriptionText',
+
+  // Application Flow
+  applyModal: '.ia-Modal-content',
+  nextButton: '.ia-continueButton',
+  submitButton: '.ia-applyButton',
+  formFields: 'input, textarea, select'
+};
+
+export const NAUKRI_SELECTORS = {
+  // Search Results Page
+  searchResultsList: '.jobTuple',
+  jobCard: '.jobTuple',
+  jobCardTitle: '.title a, .jobTuple-title a',
+  jobCardCompany: '.subTitle, .companyInfo',
+  jobCardLocation: '.locationsContainer, .jobTuple-location',
+  jobCardApplyButton: '.apply, .applyButton',
+  jobCardApplied: '.applied',
+
+  // Job Detail Page
+  jobTitle: '.jd-header-title',
+  companyName: '.jd-header-comp-name',
+  jobLocation: '.jd-header-comp-loc',
+  applyButton: '.apply-button, .primaryBtn',
+  jobDescription: '.dang-inner-html',
+
+  // Application Flow
+  applyModal: '.modal-content',
+  submitButton: '.btn-primary',
+  formFields: 'input, textarea, select'
+};
+
+export const PLATFORM_CONFIGS = {
+  linkedin: {
+    name: 'LinkedIn',
+    baseUrl: 'https://www.linkedin.com',
+    jobSearchUrl: 'https://www.linkedin.com/jobs/search/',
+    selectors: LINKEDIN_SELECTORS,
+    features: {
+      easyApply: true,
+      bulkApply: true,
+      searchResults: true
+    }
+  },
+  indeed: {
+    name: 'Indeed',
+    baseUrl: 'https://www.indeed.com',
+    jobSearchUrl: 'https://www.indeed.com/jobs',
+    selectors: INDEED_SELECTORS,
+    features: {
+      easyApply: true,
+      bulkApply: true,
+      searchResults: true
+    }
+  },
+  naukri: {
+    name: 'Naukri',
+    baseUrl: 'https://www.naukri.com',
+    jobSearchUrl: 'https://www.naukri.com/jobs-search',
+    selectors: NAUKRI_SELECTORS,
+    features: {
+      easyApply: true,
+      bulkApply: true,
+      searchResults: true
+    }
+  }
 };
